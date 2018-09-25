@@ -20,6 +20,7 @@
 
 #include <clock.h>
 #include <gpio.h>
+#include <priv_gpio.h>
 #include <heap.h>
 #include <stm32l476xx.h>
 #include <task.h>
@@ -53,19 +54,29 @@ int main(void)
 void task2(void);
 void kmain(void)
 {
-	gpio_mode(GPIOA, 5, OUTPUT);
+	gpio(GPIO_MODE, (uint32_t)GPIOA, 5, OUTPUT);
+	//gpio_mode(GPIOA, 5, OUTPUT);
 	task_start(task2, 512);
 
 	for (int i = 0; i < 8; i++) {
 		gpio_dout(GPIOA, 5, !(i & 1));
 		delay(200);
 	}
-
-	return;
 }
 
+void task3(void);
 void task2(void)
 {
-	while (1)
-		delay(800);
+	delay(400);
+	task_start(task3, 1024);
+}
+
+void task3(void)
+{
+	int state = 0;
+	delay(2500);
+	while (1) {
+		gpio_dout(GPIOA, 5, state ^= 1);
+		delay(500);
+	}
 }

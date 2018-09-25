@@ -20,6 +20,27 @@
 
 #include <gpio.h>
 
+void gpio_svc(uint32_t *args)
+{
+	switch (args[0]) {
+	case 0:
+		gpio_mode((GPIO_TypeDef *)args[1], args[2], args[3]);
+		break;
+	case 1:
+		gpio_type((GPIO_TypeDef *)args[1], args[2], args[3]);
+		break;
+	case 2:
+		gpio_pupd((GPIO_TypeDef *)args[1], args[2], args[3]);
+		break;
+	case 3:
+		gpio_speed((GPIO_TypeDef *)args[1], args[2], args[3]);
+		break;
+	case 4:
+		gpio_dout((GPIO_TypeDef *)args[1], args[2], args[3]);
+		break;
+	}
+}
+
 void gpio_init(void)
 {
 	// enable clocks
