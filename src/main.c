@@ -54,12 +54,11 @@ int main(void)
 void task2(void);
 void kmain(void)
 {
-	gpio(GPIO_MODE, (uint32_t)GPIOA, 5, OUTPUT);
-	//gpio_mode(GPIOA, 5, OUTPUT);
+	gpio(GPIO_MODE, 5, OUTPUT);
 	task_start(task2, 512);
 
 	for (int i = 0; i < 8; i++) {
-		gpio_dout(GPIOA, 5, !(i & 1));
+		gpio(GPIO_OUT, 5, !(i & 1));
 		delay(200);
 	}
 }
@@ -76,7 +75,7 @@ void task3(void)
 	int state = 0;
 	delay(2500);
 	while (1) {
-		gpio_dout(GPIOA, 5, state ^= 1);
+		gpio(GPIO_OUT, 5, state ^= 1);
 		delay(500);
 	}
 }

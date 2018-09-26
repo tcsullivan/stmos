@@ -48,7 +48,6 @@ void _exit(int code)
 	free(current);
 
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	while (1);
 }
 
 /**
@@ -56,11 +55,18 @@ void _exit(int code)
  * Calls the task's main code, setting _exit() as the return point.
  */
 __attribute__ ((naked))
+void task_doexit(void)
+{
+	asm("eor r0, r0; svc 0");
+	while (1);
+}
+
+__attribute__ ((naked))
 void task_crt0(void)
 {
 	asm("\
 		mov r4, lr; \
-		ldr lr, =_exit; \
+		ldr lr, =task_doexit; \
 		bx r4; \
 	");
 }
@@ -95,8 +101,11 @@ task_t *task_create(void (*code)(void), uint32_t stackSize)
 void task_init(void (*init)(void))
 {
 	current = (task_t *)malloc(sizeof(task_t));
+	current->stack = 0;
+
 	task_t *init_task = task_create(init, 4096);
 
+	prev = init_task;
 	current->next = init_task;
 	init_task->next = init_task;
 
@@ -108,13 +117,12 @@ void task_init(void (*init)(void))
 		mov %0, r0; \
 		msr psp, r0; \
 		mrs r0, control; \
-		orr r0, r0, #2; \
+		orr r0, r0, #3; \
 		cpsie i; \
 		msr control, r0; \
 	" : "=r" (current->sp));
 
-	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	while (1);
+	task_doexit();
 }
 
 void task_start(void (*task)(void), uint16_t stackSize)

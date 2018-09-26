@@ -22,14 +22,19 @@
 #include <stdint.h>
 #include <gpio.h>
 #include <clock.h>
+#include <task.h>
 
 extern void gpio_svc(uint32_t *);
 
 void svc_handler(uint32_t *args)
 {
-	uint32_t svc_number = ((char *)args[6])[-2];
+	/*uint32_t*/int svc_number = ((char *)args[6])[-2];
 
 	switch (svc_number) {
+	case -1:
+	case 0:
+		_exit(args[0]);
+		break;
 	case 1:
 		gpio_svc(args);
 		break;

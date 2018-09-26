@@ -20,23 +20,31 @@
 
 #include <gpio.h>
 
+static const GPIO_TypeDef *gpio_ports[8] = {
+	GPIOA, GPIOB, GPIOC, GPIOD,
+	GPIOE, GPIOF, GPIOG, GPIOH
+};
+
 void gpio_svc(uint32_t *args)
 {
+	GPIO_TypeDef *port = gpio_ports[args[1] / 16];
+	uint32_t pin = args[1] & 0xF;
+
 	switch (args[0]) {
 	case 0:
-		gpio_mode((GPIO_TypeDef *)args[1], args[2], args[3]);
+		gpio_mode(port, pin, args[2]);
 		break;
 	case 1:
-		gpio_type((GPIO_TypeDef *)args[1], args[2], args[3]);
+		gpio_type(port, pin, args[2]);
 		break;
 	case 2:
-		gpio_pupd((GPIO_TypeDef *)args[1], args[2], args[3]);
+		gpio_pupd(port, pin, args[2]);
 		break;
 	case 3:
-		gpio_speed((GPIO_TypeDef *)args[1], args[2], args[3]);
+		gpio_speed(port, pin, args[2]);
 		break;
 	case 4:
-		gpio_dout((GPIO_TypeDef *)args[1], args[2], args[3]);
+		gpio_dout(port, pin, args[2]);
 		break;
 	}
 }
