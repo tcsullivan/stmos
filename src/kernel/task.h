@@ -54,8 +54,10 @@ void task_start(void (*task)(void), uint16_t stackSize);
  */
 void task_hold(uint8_t hold);
 
+/**
+ * Frees the task's resources and removes it from the running task list.
+ * @param code An unused exit code
+ */
 void _exit(int code);
-
-//int fork(void);
 
 #endif // TASK_H_

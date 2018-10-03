@@ -25,37 +25,26 @@ AS = as
 MCUFLAGS = -mthumb -mcpu=cortex-m4 #-mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
 CFLAGS = $(MCUFLAGS) -ggdb \
-	-Iinclude -Iinclude/cmsis \
+	-I.. \
 	-fno-builtin -fsigned-char -ffreestanding \
 	-Wall -Werror -Wextra -pedantic \
 	-Wno-overlength-strings -Wno-discarded-qualifiers
 LFLAGS = -T link.ld
 
-CFILES = $(wildcard src/*.c)
-AFILES = $(wildcard src/*.s) 
+OUT = main.elf
 
-OUTDIR = out
-OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
-	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
+export
 
-OUT = out/main.elf
-
-all: $(OUT)
-
-$(OUT): $(OFILES)
+all: 
+	@$(MAKE) -C src/kernel
+	@$(MAKE) -C src/user
 	@echo "  LINK   " $(OUT)
-	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT)
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) $$(find src/ -name "*.o")
 
-$(OUTDIR)/%.o: src/%.c
-	@echo "  CC     " $<
-	@$(CROSS)$(CC) $(CFLAGS) -c $< -o $@
-
-$(OUTDIR)/%.asm.o: src/%.s
-	@echo "  AS     " $<
-	@$(CROSS)$(AS) $(AFLAGS) -c $< -o $@
 
 clean:
 	@echo "  CLEAN"
-	@rm -rf out/*
-
+	@$(MAKE) -C src/kernel clean
+	@$(MAKE) -C src/user clean
+	@rm -f $(OUT)
 

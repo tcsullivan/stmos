@@ -18,11 +18,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <clock.h>
-#include <stm32l476xx.h>
+#include "clock.h"
+#include <arch/stm/stm32l476xx.h>
 
 // ticks since init
 volatile uint32_t ticks = 0;
+
+volatile uint8_t tim2_finished = 1;
+
+void clock_svc(uint32_t *args)
+{
+	udelay(args[0]);
+}
 
 void clock_init(void)
 {
@@ -53,6 +60,15 @@ void clock_init(void)
 	// SysTick init. 80MHz / 80000 = 1kHz, ms precision
 	SysTick->LOAD = 80000;
 	SysTick->CTRL |= 0x07; // no div, interrupt, enable
+
+	// Prepare TIM2 for microsecond timing
+	NVIC_EnableIRQ(TIM2_IRQn);
+	
+	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
+	TIM2->DIER |= TIM_DIER_UIE;
+	TIM2->PSC = 40 - 1;
+	TIM2->ARR = 100;
+	TIM2->CR1 |= TIM_CR1_OPM | TIM_CR1_CEN;
 }
 
 void delay(uint32_t count)
@@ -61,12 +77,27 @@ void delay(uint32_t count)
 	while (ticks < target);
 }
 
+void udelay(uint32_t count)
+{
+	tim2_finished = 0;
+	TIM2->ARR = count;
+	TIM2->CR1 |= TIM_CR1_CEN;
+	while (tim2_finished == 0);
+}
+
 void SysTick_Handler(void)
 {
 	// just keep counting
 	ticks++;
 
+	// task switch every four ticks (4ms)
 	if (!(ticks & 3))
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+}
+
+void TIM2_IRQHandler(void)
+{
+	TIM2->SR &= ~(TIM_SR_UIF);
+	tim2_finished |= 1;
 }
 

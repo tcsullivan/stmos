@@ -1,7 +1,6 @@
 /**
- * @file svc.c
- * An unused handler for SVC calls
- * TODO: use SVC calls, possibly allowing for switch to unprivileged mode?
+ * @file clock.h
+ * Clock utilities
  *
  * Copyright (C) 2018 Clyne Sullivan
  *
@@ -19,40 +18,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef CLOCK_H_
+#define CLOCK_H_
+
 #include <stdint.h>
-#include <gpio.h>
-#include <clock.h>
-#include <task.h>
 
-extern void gpio_svc(uint32_t *);
+/**
+ * Initializes clocks, setting HCLK (system clock) to 80MHz, the maximum.
+ */
+extern void clock_init(void);
 
-void svc_handler(uint32_t *args)
-{
-	/*uint32_t*/int svc_number = ((char *)args[6])[-2];
+/**
+ * Sleeps for given amount of milliseconds.
+ * @param ms Number of milliseconds to sleep for
+ */
+void delay(uint32_t ms);
 
-	switch (svc_number) {
-	case -1:
-	case 0:
-		_exit(args[0]);
-		break;
-	case 1:
-		gpio_svc(args);
-		break;
-	default:
-		break;
-	}
-}
+/**
+ * Sleeps for the given amount of microseconds.
+ * @param count Number of microseconds to sleep for
+ */
+void udelay(uint32_t count);
 
-void SVC_Handler(void) {
-	uint32_t *args;
-
-	asm("\
-		tst lr, #4; \
-		ite eq; \
-		mrseq %0, msp; \
-		mrsne %0, psp; \
-	" : "=r" (args));
-
-	svc_handler(args);
-}
-
+#endif // CLOCK_H_

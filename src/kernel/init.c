@@ -1,6 +1,6 @@
 /**
- * @file main.c
- * Entry point for operating system
+ * @file init.c
+ * Kernel initialization procedure
  *
  * Copyright (C) 2018 Clyne Sullivan
  *
@@ -18,16 +18,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <clock.h>
-#include <gpio.h>
-#include <priv_gpio.h>
-#include <heap.h>
-#include <stm32l476xx.h>
-#include <task.h>
+#include "clock.h"
+#include "gpio.h"
+#include "heap.h"
+#include "task.h"
+#include <arch/stm/stm32l476xx.h>
 
 extern uint8_t __bss_end__;
 
-void kmain(void);
+extern void user_main(void);
 
 int main(void)
 {
@@ -47,35 +46,7 @@ int main(void)
 	// enable FPU
 	//SCB->CPACR |= (0xF << 20);
 
-	task_init(kmain);
+	task_init(user_main);
 	while (1);
 }
 
-void task2(void);
-void kmain(void)
-{
-	gpio(GPIO_MODE, 5, OUTPUT);
-	task_start(task2, 512);
-
-	for (int i = 0; i < 8; i++) {
-		gpio(GPIO_OUT, 5, !(i & 1));
-		delay(200);
-	}
-}
-
-void task3(void);
-void task2(void)
-{
-	delay(400);
-	task_start(task3, 1024);
-}
-
-void task3(void)
-{
-	int state = 0;
-	delay(2500);
-	while (1) {
-		gpio(GPIO_OUT, 5, state ^= 1);
-		delay(500);
-	}
-}

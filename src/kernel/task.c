@@ -18,9 +18,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <task.h>
-#include <heap.h>
-#include <stm32l476xx.h>
+#include "task.h"
+#include "heap.h"
+#include <arch/stm/stm32l476xx.h>
 
 task_t *current, *prev;
 static uint8_t task_disable = 0;
@@ -167,6 +167,7 @@ void PendSV_Handler(void)
 		asm("bx lr");
 
 	// TODO why, and what does this do
+	// TODO get back to c, implement task sleeping
 	asm("\
 		mrs r0, psp; \
 		isb; \

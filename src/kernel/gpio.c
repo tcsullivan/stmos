@@ -18,7 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <gpio.h>
+#include "gpio.h"
 
 static const GPIO_TypeDef *gpio_ports[8] = {
 	GPIOA, GPIOB, GPIOC, GPIOD,

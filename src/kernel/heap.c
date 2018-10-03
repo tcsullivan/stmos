@@ -18,9 +18,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <heap.h>
+#include "heap.h"
 
 #define HEAP_ALIGN 4
+
+typedef struct {
+	uint32_t size;
+	void *next;
+} __attribute__ ((packed)) alloc_t;
 
 static alloc_t *free_blocks;
 static void *heap_end;

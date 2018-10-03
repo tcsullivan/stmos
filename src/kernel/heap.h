@@ -23,43 +23,38 @@
 
 #include <stdint.h>
 
-typedef struct {
-	uint32_t size;
-	void *next;
-} __attribute__ ((packed)) alloc_t;
-
 /**
  * Initializes memory management of the given heap.
- * No overflow stuff is done, so...
- * @param buf the heap to use for allocations
+ * No overflow stuff is done, so... be careful.
+ * @param buf The heap to use for allocations
  */
 void heap_init(void *buf);
 
 /**
- * Returns the amount of free memory, in bytes.
- * @return amount of free memory in bytes
+ * Returns the amount of free, allocatable memory, in bytes.
+ * @return Amount of free memory in bytes
  */
 uint32_t heap_free(void);
 
 /**
  * Allocates a chunk of memory.
- * @param size how many bytes to claim
- * @return pointer to the allocated buffer
+ * @param size How many bytes to claim
+ * @return Pointer to the allocated buffer
  */
 void *malloc(uint32_t size);
 
 /**
  * Allocates and zeros a chunk of memory.
- * @param count how many of whatever to allocate
- * @param size byte count of each whatever
- * @return pointer to the allocated buffer
+ * @param count How many of whatever to allocate
+ * @param size Byte count of each whatever
+ * @return Pointer to the allocated buffer
  */
 void *calloc(uint32_t count, uint32_t size);
 
 /**
  * Frees the buffer allocated through malloc/calloc.
  * Please don't double-free.
- * @param the buffer to release
+ * @param The buffer to release
  */
 void free(void *buf);
 
