@@ -28,6 +28,8 @@
  */
 extern void clock_init(void);
 
+uint32_t millis(void);
+
 /**
  * Sleeps for given amount of milliseconds.
  * @param ms Number of milliseconds to sleep for

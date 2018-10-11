@@ -19,6 +19,7 @@
  */
 
 #include "clock.h"
+#include "task.h"
 #include <arch/stm/stm32l476xx.h>
 
 // ticks since init
@@ -26,9 +27,16 @@ volatile uint32_t ticks = 0;
 
 volatile uint8_t tim2_finished = 1;
 
+extern task_t *current;
+
 void clock_svc(uint32_t *args)
 {
-	udelay(args[0]);
+	if (args[0] == 0) {
+		current->sleep = ticks + args[1];
+		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+	} else if (args[0] == 1) {
+		udelay(args[1]);
+	}
 }
 
 void clock_init(void)
@@ -69,6 +77,11 @@ void clock_init(void)
 	TIM2->PSC = 40 - 1;
 	TIM2->ARR = 100;
 	TIM2->CR1 |= TIM_CR1_OPM | TIM_CR1_CEN;
+}
+
+uint32_t millis(void)
+{
+	return ticks;
 }
 
 void delay(uint32_t count)

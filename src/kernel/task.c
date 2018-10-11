@@ -18,8 +18,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "task.h"
+#include "clock.h"
 #include "heap.h"
+#include "task.h"
 #include <arch/stm/stm32l476xx.h>
 
 task_t *current, *prev;
@@ -71,7 +72,7 @@ void task_crt0(void)
 	");
 }
 
-task_t *task_create(void (*code)(void), uint32_t stackSize)
+task_t *task_create(void (*code)(void), uint16_t stackSize)
 {
 	task_t *t = (task_t *)malloc(sizeof(task_t));
 	t->next = 0;
@@ -95,15 +96,16 @@ task_t *task_create(void (*code)(void), uint32_t stackSize)
 	t->sp[14] = (uint32_t)code;
 	t->sp[15] = (uint32_t)task_crt0;
 	t->sp[16] = 0x01000000;
+	t->sleep = 0;
 	return t;
 }
 
-void task_init(void (*init)(void))
+void task_init(void (*init)(void), uint16_t stackSize)
 {
 	current = (task_t *)malloc(sizeof(task_t));
 	current->stack = 0;
 
-	task_t *init_task = task_create(init, 4096);
+	task_t *init_task = task_create(init, stackSize);
 
 	prev = init_task;
 	current->next = init_task;
@@ -166,33 +168,29 @@ void PendSV_Handler(void)
 	if (task_disable != 0)
 		asm("bx lr");
 
-	// TODO why, and what does this do
 	// TODO get back to c, implement task sleeping
+
+	// Save current stack pointer
 	asm("\
 		mrs r0, psp; \
 		isb; \
-		ldr r1, =current; \
-		ldr r2, [r1]; \
 		stmdb r0!, {r4-r11, r14}; \
-		str r0, [r2, #8]; \
-		ldr r0, [r2, #0]; \
-		ldr r3, =prev; \
-		str r2, [r3]; \
-		str r0, [r1]; \
-		ldr r2, [r1]; \
-		ldr r0, [r2, #8]; \
+		mov %0, r0; \
+	" : "=r" (current->sp));
+
+	// Load next task
+	uint32_t ticks = millis();
+	do {
+		current = current->next;
+	} while (current->sleep > ticks);
+	current->sleep = 0;
+
+	// Load stack pointer, return
+	asm("\
+		mov r0, %0; \
 		ldmia r0!, {r4-r11, r14}; \
 		msr psp, r0; \
 		bx lr; \
-	");
-	// r1 = current
-	// r2 = *current
-	// r0 = sp
-	// *current.sp = sp
-	// r0 = current->next
-	// current = r0
-	// r2 = *current
-	// r0 = *current.sp
-	// unpack
+	" :: "r" (current->sp));
 }
 

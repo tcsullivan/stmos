@@ -27,6 +27,7 @@
 extern uint8_t __bss_end__;
 
 extern void user_main(void);
+void init_idle(void);
 
 int main(void)
 {
@@ -46,7 +47,14 @@ int main(void)
 	// enable FPU
 	//SCB->CPACR |= (0xF << 20);
 
-	task_init(user_main);
+	task_init(init_idle, 512);
 	while (1);
 }
 
+void init_idle(void)
+{
+	task_start(user_main, 4096);
+
+	while (1)
+		delay(100);
+}

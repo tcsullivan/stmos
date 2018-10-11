@@ -30,6 +30,7 @@ typedef struct {
 	void *next;      /**< pointer to the next task_t instance */
 	uint32_t *stack; /**< pointer to the task's stack */
 	uint32_t *sp;    /**< pointer to the task's last sp register value */
+	uint32_t sleep;  /**< number of milliseconds task is sleeping for */
 } task_t;
 
 /**
@@ -37,7 +38,7 @@ typedef struct {
  * This task is given a 4kb stack.
  * @param init the initial thread to run
  */
-void task_init(void (*init)(void));
+void task_init(void (*init)(void), uint16_t stackSize);
 
 /**
  * Starts a new task.

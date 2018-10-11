@@ -5,7 +5,16 @@
 void task1(void);
 void task2(void);
 
+void user_delay(uint32_t ms)
+{
+	register uint32_t r1 asm("r1") = ms;
 
+	asm("\
+		mov r0, 0; \
+		mov r1, %0; \
+		svc 2; \
+	" :: "r" (r1));
+}
 
 void user_main(void)
 {
@@ -14,22 +23,22 @@ void user_main(void)
 
 	for (int i = 0; i < 8; i++) {
 		gpio(GPIO_OUT, 5, !(i & 1));
-		delay(200);
+		user_delay(200);
 	}
 }
 
 void task1(void)
 {
-	delay(400);
+	user_delay(400);
 	task_start(task2, 1024);
 }
 
 void task2(void)
 {
 	int state = 0;
-	delay(2500);
+	user_delay(2500);
 	while (1) {
 		gpio(GPIO_OUT, 5, state ^= 1);
-		delay(500);
+		user_delay(500);
 	}
 }
