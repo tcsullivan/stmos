@@ -51,9 +51,9 @@ void _exit(int code)
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
 
+
 /**
- * 'Prepares' task for running.
- * Calls the task's main code, setting _exit() as the return point.
+ * Exits the task (userspace call).
  */
 __attribute__ ((naked))
 void task_doexit(void)
@@ -62,6 +62,10 @@ void task_doexit(void)
 	while (1);
 }
 
+/**
+ * 'Prepares' task for running.
+ * Calls the task's main code, setting task_doexit() (_exit) as the return point.
+ */
 __attribute__ ((naked))
 void task_crt0(void)
 {
@@ -103,7 +107,7 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 void task_init(void (*init)(void), uint16_t stackSize)
 {
 	current = (task_t *)malloc(sizeof(task_t));
-	current->stack = 0;
+	current->stack = 0; // free() is called on this
 
 	task_t *init_task = task_create(init, stackSize);
 
@@ -116,14 +120,14 @@ void task_init(void (*init)(void), uint16_t stackSize)
 	// bit 0 - priv, bit 1 - psp/msp
 	asm("\
 		mov r0, sp; \
-		mov %0, r0; \
 		msr psp, r0; \
 		mrs r0, control; \
 		orr r0, r0, #3; \
 		cpsie i; \
 		msr control, r0; \
-	" : "=r" (current->sp));
+	");
 
+	// exit the current (fake) task
 	task_doexit();
 }
 
@@ -179,6 +183,7 @@ void PendSV_Handler(void)
 	" : "=r" (current->sp));
 
 	// Load next task
+	prev = current;
 	uint32_t ticks = millis();
 	do {
 		current = current->next;
