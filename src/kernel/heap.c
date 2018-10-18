@@ -22,11 +22,6 @@
 
 #define HEAP_ALIGN 4
 
-typedef struct {
-	uint32_t size;
-	void *next;
-} __attribute__ ((packed)) alloc_t;
-
 static alloc_t *free_blocks;
 static void *heap_end;
 

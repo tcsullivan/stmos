@@ -2,9 +2,6 @@
 #include "priv_gpio.h"
 #include <kernel/task.h>
 
-void task1(void);
-void task2(void);
-
 void user_delay(uint32_t ms)
 {
 	register uint32_t r1 asm("r1") = ms;
@@ -16,29 +13,32 @@ void user_delay(uint32_t ms)
 	" :: "r" (r1));
 }
 
+int fork(void)
+{
+	int result;
+	asm("\
+		mov r0, sp; \
+		svc 3; \
+		mov %0, r0; \
+	" : "=r" (result));
+	return result;
+}
+
 void user_main(void)
 {
 	gpio(GPIO_MODE, 5, OUTPUT);
-	task_start(task1, 512);
 
-	for (int i = 0; i < 8; i++) {
-		gpio(GPIO_OUT, 5, !(i & 1));
-		user_delay(200);
+	if (fork() == 0) {
+		while (1) {
+			gpio(GPIO_OUT, 5, 1);
+			user_delay(1000);
+		}
+	} else {
+		while (1) {
+			gpio(GPIO_OUT, 5, 0);
+			user_delay(500);
+		}
+	
 	}
 }
 
-void task1(void)
-{
-	user_delay(400);
-	task_start(task2, 1024);
-}
-
-void task2(void)
-{
-	int state = 0;
-	user_delay(2500);
-	while (1) {
-		gpio(GPIO_OUT, 5, state ^= 1);
-		user_delay(500);
-	}
-}

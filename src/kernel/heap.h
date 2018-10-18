@@ -23,6 +23,11 @@
 
 #include <stdint.h>
 
+typedef struct {
+	uint32_t size;
+	void *next;
+} __attribute__ ((packed)) alloc_t;
+
 /**
  * Initializes memory management of the given heap.
  * No overflow stuff is done, so... be careful.

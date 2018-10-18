@@ -26,6 +26,7 @@
 
 extern void gpio_svc(uint32_t *);
 extern void clock_svc(uint32_t *);
+extern void task_svc(uint32_t *);
 
 void svc_handler(uint32_t *args)
 {
@@ -41,6 +42,11 @@ void svc_handler(uint32_t *args)
 		break;
 	case 2:
 		clock_svc(args);
+		break;
+	case 3:
+		task_svc(args);
+		asm("mov r0, %0" :: "r" (args[0]));
+		break;
 	default:
 		break;
 	}

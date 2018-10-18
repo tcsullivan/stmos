@@ -26,6 +26,13 @@
 task_t *current, *prev;
 static uint8_t task_disable = 0;
 
+int task_fork(uint32_t sp);
+void task_svc(uint32_t *args)
+{
+	int result = task_fork(args[0]);
+	args[0] = result;
+}
+
 void task_hold(uint8_t hold)
 {
 	if (hold != 0)
@@ -119,11 +126,12 @@ void task_init(void (*init)(void), uint16_t stackSize)
 
 	// bit 0 - priv, bit 1 - psp/msp
 	asm("\
+		isb; \
+		cpsie i; \
 		mov r0, sp; \
 		msr psp, r0; \
 		mrs r0, control; \
 		orr r0, r0, #3; \
-		cpsie i; \
 		msr control, r0; \
 	");
 
@@ -140,31 +148,41 @@ void task_start(void (*task)(void), uint16_t stackSize)
 	task_hold(0);
 }
 
-/*int fork_ret(void)
+int task_fork_ret(void)
 {
-	return 1;
+	return 0;
 }
 
-int fork(void)
+// Return 0 for child, non-zero for parent
+int task_fork(uint32_t sp)
 {
-	void (*pc)(void) = (void (*)(void))((uint32_t)fork_ret & ~(3));
 	task_hold(1);
 
-	// duplicate task info
-	alloc_t *heapInfo = (alloc_t *)(current->stack - 2);
-	task_t *t = task_create(pc, heapInfo->size);
-	memcpy(t->stack, current->stack, heapInfo->size);
-	uint32_t *sp;
-	asm("mov %0, sp" : "=r" (sp));
-	t->sp = t->stack + (sp - current->stack);
+	// 1. Get a PC for the child
+	void (*pc)(void) = (void (*)(void))((uint32_t)task_fork_ret);
 
-	t->next = current->next;
-	current->next = t;
-	current = t;
+	// 2. Prepare child task
+	alloc_t *stackInfo = (alloc_t *)(((uint8_t *)current->stack)
+		- sizeof(alloc_t));
+	task_t *childTask = task_create(pc, stackInfo->size - 8);
+	for (uint32_t i = 0; i < (stackInfo->size - 8); i++)
+		childTask->stack[i] = current->stack[i];
+
+	//uint32_t *sp;
+	//asm("mov %0, sp" : "=r" (sp));
+	childTask->sp = (uint32_t *)((uint32_t)childTask->stack + (sp
+		- (uint32_t)current->stack));
+
+	// 3. Insert child into task chain
+	childTask->next = current->next;
+	current->next = childTask;
+
+	// 4. Re-enable scheduler, make change happen
 	task_hold(0);
+
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	return 0;
-}*/
+	return 1;
+}
 
 __attribute__ ((naked))
 void PendSV_Handler(void) 
