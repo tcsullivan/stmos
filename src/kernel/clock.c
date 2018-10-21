@@ -31,12 +31,10 @@ extern task_t *current;
 
 void clock_svc(uint32_t *args)
 {
-	if (args[0] == 0) {
-		current->sleep = ticks + args[1];
-		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	} else if (args[0] == 1) {
+	if (args[0] == 0)
+		task_sleep(args[1]);
+	else if (args[0] == 1)
 		udelay(args[1]);
-	}
 }
 
 void clock_init(void)

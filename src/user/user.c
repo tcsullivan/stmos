@@ -17,7 +17,6 @@ int fork(void)
 {
 	int result;
 	asm("\
-		mov r0, sp; \
 		svc 3; \
 		mov %0, r0; \
 	" : "=r" (result));
@@ -31,14 +30,14 @@ void user_main(void)
 	if (fork() == 0) {
 		while (1) {
 			gpio(GPIO_OUT, 5, 1);
-			user_delay(1000);
+			user_delay(2000);
 		}
 	} else {
 		while (1) {
+			user_delay(1000);
 			gpio(GPIO_OUT, 5, 0);
-			user_delay(500);
+			user_delay(1000);
 		}
-	
 	}
 }
 

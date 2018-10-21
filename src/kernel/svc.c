@@ -1,7 +1,6 @@
 /**
  * @file svc.c
  * An unused handler for SVC calls
- * TODO: use SVC calls, possibly allowing for switch to unprivileged mode?
  *
  * Copyright (C) 2018 Clyne Sullivan
  *
@@ -28,9 +27,17 @@ extern void gpio_svc(uint32_t *);
 extern void clock_svc(uint32_t *);
 extern void task_svc(uint32_t *);
 
-void svc_handler(uint32_t *args)
-{
-	/*uint32_t*/int svc_number = ((char *)args[6])[-2];
+void SVC_Handler(void) {
+	uint32_t *args;
+
+	asm("\
+		tst lr, #4; \
+		ite eq; \
+		mrseq %0, msp; \
+		mrsne %0, psp; \
+	" : "=r" (args));
+
+	int svc_number = ((char *)args[6])[-2];
 
 	switch (svc_number) {
 	case -1:
@@ -44,24 +51,16 @@ void svc_handler(uint32_t *args)
 		clock_svc(args);
 		break;
 	case 3:
+		asm("\
+			mrs r0, psp; \
+			stmdb r0!, {r4-r11, r14}; \
+			mov %0, r0; \
+		" : "=r" (args[0]));
 		task_svc(args);
-		asm("mov r0, %0" :: "r" (args[0]));
+		asm("mov r0, %0" :: "r" (args[0])); // TODO doesn't work, r0 overwritten on exc. return
 		break;
 	default:
 		break;
 	}
-}
-
-void SVC_Handler(void) {
-	uint32_t *args;
-
-	asm("\
-		tst lr, #4; \
-		ite eq; \
-		mrseq %0, msp; \
-		mrsne %0, psp; \
-	" : "=r" (args));
-
-	svc_handler(args);
 }
 

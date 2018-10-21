@@ -23,8 +23,10 @@
 #include "task.h"
 #include <arch/stm/stm32l476xx.h>
 
-task_t *current, *prev;
+static task_t *task_current;
+static task_t *task_queue;
 static uint8_t task_disable = 0;
+static uint32_t task_next_pid = 0;
 
 int task_fork(uint32_t sp);
 void task_svc(uint32_t *args)
@@ -41,21 +43,41 @@ void task_hold(uint8_t hold)
 		task_disable--;
 }
 
+void task_sleep(uint32_t ms)
+{
+	task_current->sleep = millis() + ms;
+	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+}
+
+uint32_t task_getpid(void)
+{
+	return task_current->pid;
+}
+
 void _exit(int code)
 {
 	(void)code;
 
-	while (prev == 0);
+	if (task_queue == task_current) {
+		task_queue = task_queue->next;
+	} else {
+		task_t *prev = task_queue;
+		while (prev->next != 0 && prev->next != task_current)
+			prev = prev->next;
 
-	prev->next = current->next;
+		if (prev->next != 0)
+			prev->next = task_current->next;
+	}
 
 	// Free this thread's stack, and task data.
 	// Since we're single core, no one else can claim this memory until
 	// a task switch, after which we're done with this memory anyway.
-	free(current->stack);
-	free(current);
+	free(task_current->stack);
+	free(task_current);
 
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+	// TODO if child proc. set return code in parent task handle?
+	// or something like that
 }
 
 
@@ -87,6 +109,9 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 {
 	task_t *t = (task_t *)malloc(sizeof(task_t));
 	t->next = 0;
+	t->sleep = 0;
+	t->pid = task_next_pid++;
+
 	t->stack = (uint32_t *)malloc(stackSize);
 	void *sp = (uint8_t *)t->stack + stackSize - 68; // excep. stack + regs
 	t->sp = sp;
@@ -107,20 +132,18 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 	t->sp[14] = (uint32_t)code;
 	t->sp[15] = (uint32_t)task_crt0;
 	t->sp[16] = 0x01000000;
-	t->sleep = 0;
 	return t;
 }
 
 void task_init(void (*init)(void), uint16_t stackSize)
 {
-	current = (task_t *)malloc(sizeof(task_t));
-	current->stack = 0; // free() is called on this
+	task_current = (task_t *)malloc(sizeof(task_t));
+	task_current->next = 0;
+	task_current->stack = 0; // free() is called on this
+	task_current->sp = 0;
+	task_current->sleep = 1000;
 
-	task_t *init_task = task_create(init, stackSize);
-
-	prev = init_task;
-	current->next = init_task;
-	init_task->next = init_task;
+	task_queue = task_create(init, stackSize);
 
 	task_disable = 0;
 
@@ -143,8 +166,8 @@ void task_start(void (*task)(void), uint16_t stackSize)
 {
 	task_hold(1);
 	task_t *t = task_create(task, stackSize);
-	t->next = current->next;
-	current->next = t;
+	t->next = task_queue;
+	task_queue = t;
 	task_hold(0);
 }
 
@@ -156,32 +179,37 @@ int task_fork_ret(void)
 // Return 0 for child, non-zero for parent
 int task_fork(uint32_t sp)
 {
-	task_hold(1);
+	asm("cpsid i");
 
-	// 1. Get a PC for the child
-	void (*pc)(void) = (void (*)(void))((uint32_t)task_fork_ret);
-
-	// 2. Prepare child task
-	alloc_t *stackInfo = (alloc_t *)(((uint8_t *)current->stack)
+	//// 1. Prepare child task
+	// Get parent task's stack info
+	alloc_t *stackInfo = (alloc_t *)(((uint8_t *)task_current->stack)
 		- sizeof(alloc_t));
-	task_t *childTask = task_create(pc, stackInfo->size - 8);
-	for (uint32_t i = 0; i < (stackInfo->size - 8); i++)
-		childTask->stack[i] = current->stack[i];
 
-	//uint32_t *sp;
-	//asm("mov %0, sp" : "=r" (sp));
+	// Create child task data
+	task_t *childTask = (task_t *)malloc(sizeof(task_t));
+	childTask->stack = (uint32_t *)malloc(stackInfo->size - sizeof(alloc_t));
+	childTask->sleep = 0;
+	childTask->pid = task_next_pid++;
+
+	// Copy parent's stack
+	for (uint32_t i = 0; i < (stackInfo->size - sizeof(alloc_t)); i++)
+		childTask->stack[i] = task_current->stack[i];
+
 	childTask->sp = (uint32_t *)((uint32_t)childTask->stack + (sp
-		- (uint32_t)current->stack));
+		- (uint32_t)task_current->stack));
+	childTask->sp[15] = (uint32_t)task_fork_ret;
+	//childTask->sp[16] = 0x01000000;
 
-	// 3. Insert child into task chain
-	childTask->next = current->next;
-	current->next = childTask;
+	//// 2. Insert child into task chain
+	childTask->next = task_queue;
+	task_queue = childTask;
 
-	// 4. Re-enable scheduler, make change happen
-	task_hold(0);
+	//// 3. Re-enable scheduler, make change happen
+	asm("cpsie i");
 
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	return 1;
+	return childTask->pid;
 }
 
 __attribute__ ((naked))
@@ -198,15 +226,21 @@ void PendSV_Handler(void)
 		isb; \
 		stmdb r0!, {r4-r11, r14}; \
 		mov %0, r0; \
-	" : "=r" (current->sp));
+	" : "=r" (task_current->sp));
 
 	// Load next task
-	prev = current;
 	uint32_t ticks = millis();
 	do {
-		current = current->next;
-	} while (current->sleep > ticks);
-	current->sleep = 0;
+		task_current = task_current->next;
+		if (task_current == 0)
+			task_current = task_queue;
+	} while (task_current->sleep > ticks);
+	task_current->sleep = 0;
+
+	/*task_current = task_current->next;
+	if (task_current == 0)
+		task_current = task_queue;*/
+
 
 	// Load stack pointer, return
 	asm("\
@@ -214,6 +248,6 @@ void PendSV_Handler(void)
 		ldmia r0!, {r4-r11, r14}; \
 		msr psp, r0; \
 		bx lr; \
-	" :: "r" (current->sp));
+	" :: "r" (task_current->sp));
 }
 

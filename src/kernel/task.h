@@ -26,11 +26,12 @@
 /**
  * A structure to contain task data.
  */
-typedef struct {
-	void *next;      /**< pointer to the next task_t instance */
-	uint32_t *stack; /**< pointer to the task's stack */
-	uint32_t *sp;    /**< pointer to the task's last sp register value */
-	uint32_t sleep;  /**< number of milliseconds task is sleeping for */
+typedef struct task_t {
+	struct task_t *next; /**< pointer to the next task_t instance */
+	uint32_t *sp;        /**< pointer to the task's last sp register value */
+	uint32_t *stack;     /**< pointer to the task's stack */
+	uint32_t sleep;      /**< number of milliseconds task is sleeping for */
+	uint32_t pid;
 } task_t;
 
 /**
@@ -60,5 +61,9 @@ void task_hold(uint8_t hold);
  * @param code An unused exit code
  */
 void _exit(int code);
+
+void task_sleep(uint32_t ms);
+
+uint32_t task_getpid(void);
 
 #endif // TASK_H_
