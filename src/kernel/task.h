@@ -21,7 +21,13 @@
 #ifndef TASK_H_
 #define TASK_H_
 
+#include "vfs.h"
 #include <stdint.h>
+
+#define WIFEXITED(w)   (w & (1 << 8))
+#define WEXITSTATUS(w) (w & 0xFF)
+
+typedef uint16_t pid_t;
 
 /**
  * A structure to contain task data.
@@ -30,9 +36,21 @@ typedef struct task_t {
 	struct task_t *next; /**< pointer to the next task_t instance */
 	uint32_t *sp;        /**< pointer to the task's last sp register value */
 	uint32_t *stack;     /**< pointer to the task's stack */
-	uint32_t sleep;      /**< number of milliseconds task is sleeping for */
-	uint32_t pid;
+	pid_t pid;           /**< Task (Process) ID */
+	pid_t pgid;          /**< Process Group ID */
+	struct {
+		uint32_t state : 8;
+		uint32_t value : 24;
+	} status;
+//	vfs_node *cwd;
 } task_t;
+
+enum TASK_STATUS_FLAGS {
+	TASK_RUNNING,  /**< Task is actively running */
+	TASK_SLEEPING, /**< Task is sleeping for task_t.sleep ms */
+	TASK_EXITED,   /**< Task has exited, task_t.sleep has code */
+	TASK_ZOMBIE    /**< Task exited, accounted for, ready to go bye bye */
+};
 
 /**
  * Enters multitasking mode. The given function acts as the initial thread.
@@ -56,14 +74,8 @@ void task_start(void (*task)(void), uint16_t stackSize);
  */
 void task_hold(uint8_t hold);
 
-/**
- * Frees the task's resources and removes it from the running task list.
- * @param code An unused exit code
- */
-void _exit(int code);
-
 void task_sleep(uint32_t ms);
 
-uint32_t task_getpid(void);
+//vfs_node *task_getcwd(void);
 
 #endif // TASK_H_

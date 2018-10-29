@@ -41,23 +41,30 @@ void SVC_Handler(void) {
 
 	switch (svc_number) {
 	case -1:
-	case 0:
-		_exit(args[0]);
+	case 0: /* Task-related calls
+		 * 0 - _exit
+		 * 1 - fork
+		 * 2 - getpid
+		 * 3 - waitpid
+		 */
+		task_svc(args);
 		break;
-	case 1:
+
+	case 1: /* GPIO-related calls
+		 * 0 - gpio_mode
+		 * 1 - gpio_type
+		 * 2 - gpio_pupd
+		 * 3 - gpio_speed
+		 * 4 - gpio_dout
+		 */
 		gpio_svc(args);
 		break;
-	case 2:
+
+	case 2: /* Clock-related calls
+		 * 0 - delay
+		 * 1 - udelay
+		 */
 		clock_svc(args);
-		break;
-	case 3:
-		asm("\
-			mrs r0, psp; \
-			stmdb r0!, {r4-r11, r14}; \
-			mov %0, r0; \
-		" : "=r" (args[0]));
-		task_svc(args);
-		asm("mov r0, %0" :: "r" (args[0])); // TODO doesn't work, r0 overwritten on exc. return
 		break;
 	default:
 		break;

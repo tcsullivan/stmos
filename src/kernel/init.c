@@ -22,6 +22,7 @@
 #include "gpio.h"
 #include "heap.h"
 #include "task.h"
+#include "vfs.h"
 #include <arch/stm/stm32l476xx.h>
 
 extern uint8_t __bss_end__;

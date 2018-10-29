@@ -15,11 +15,12 @@ void user_delay(uint32_t ms)
 
 int fork(void)
 {
-	int result;
+	int result = 0;
 	asm("\
-		svc 3; \
-		mov %0, r0; \
-	" : "=r" (result));
+		mov r0, 1; \
+		mov r1, %0; \
+		svc 0; \
+	" :: "r" (&result));
 	return result;
 }
 
