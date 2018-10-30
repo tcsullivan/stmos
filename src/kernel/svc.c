@@ -66,6 +66,18 @@ void SVC_Handler(void) {
 		 */
 		clock_svc(args);
 		break;
+
+	case 3: /* FS-related calls
+		 * 0 - open
+		 * 1 - read
+		 * 2 - write
+		 * 3 - close
+		 * 4 - stat
+		 * 5 - seek
+		 * link/unlink?
+		 */
+		break;
+
 	default:
 		break;
 	}
