@@ -23,6 +23,7 @@
 #include "heap.h"
 #include "task.h"
 #include "vfs.h"
+#include <fs/initrd.h>
 #include <arch/stm/stm32l476xx.h>
 
 extern uint8_t __bss_end__;
@@ -44,6 +45,9 @@ int main(void)
 	clock_init();
 	heap_init(&__bss_end__);
 	gpio_init();
+
+	vfs_init();
+	initrd_init();
 
 	// enable FPU
 	//SCB->CPACR |= (0xF << 20);

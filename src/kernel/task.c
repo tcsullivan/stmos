@@ -30,11 +30,6 @@ static task_t *task_queue;
 static uint8_t task_disable = 0;
 static pid_t task_next_pid = 0;
 
-void task_exit(int code);
-int task_fork(void);
-pid_t task_getpid(void);
-pid_t task_waitpid(pid_t pid, int *wstatus, int options);
-
 void task_svc(uint32_t *args)
 {
 	switch (args[0]) {

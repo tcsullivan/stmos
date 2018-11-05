@@ -1,6 +1,8 @@
-#include <kernel/clock.h>
 #include "priv_gpio.h"
-#include <kernel/task.h>
+
+#include <kernel/clock.h>
+#include <kernel/heap.h>
+#include <kernel/vfs.h>
 
 void user_delay(uint32_t ms)
 {
@@ -27,6 +29,11 @@ int fork(void)
 void user_main(void)
 {
 	gpio(GPIO_MODE, 5, OUTPUT);
+
+	int test = vfs_open("A:/hello", VFS_FILE_READ);
+	char *buf = malloc(20);
+	int count = vfs_read(test, 20, (uint8_t *)buf);
+	(void)count;
 
 	if (fork() == 0) {
 		while (1) {

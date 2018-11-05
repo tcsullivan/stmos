@@ -21,7 +21,6 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include "vfs.h"
 #include <stdint.h>
 
 #define WIFEXITED(w)   (w & (1 << 8))
@@ -42,7 +41,6 @@ typedef struct task_t {
 		uint32_t state : 8;
 		uint32_t value : 24;
 	} status;
-//	vfs_node *cwd;
 } task_t;
 
 enum TASK_STATUS_FLAGS {
@@ -76,6 +74,13 @@ void task_hold(uint8_t hold);
 
 void task_sleep(uint32_t ms);
 
-//vfs_node *task_getcwd(void);
+void task_exit(int code);
+
+int task_fork(void);
+
+pid_t task_getpid(void);
+
+pid_t task_waitpid(pid_t pid, int *wstatus, int options);
+
 
 #endif // TASK_H_

@@ -26,6 +26,7 @@
 extern void gpio_svc(uint32_t *);
 extern void clock_svc(uint32_t *);
 extern void task_svc(uint32_t *);
+extern void vfs_svc(uint32_t *args);
 
 void SVC_Handler(void) {
 	uint32_t *args;
@@ -65,6 +66,12 @@ void SVC_Handler(void) {
 		 * 1 - udelay
 		 */
 		clock_svc(args);
+		break;
+	case 3: /* Filesystem-related calls
+		 * 0 - mount
+		 * 1 - open
+		 */
+		vfs_svc(args);
 		break;
 	default:
 		break;

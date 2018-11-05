@@ -21,6 +21,7 @@
 CROSS = arm-none-eabi-
 CC = gcc
 AS = as
+OBJCOPY = objcopy
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 #-mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
@@ -37,14 +38,19 @@ export
 
 all: 
 	@$(MAKE) -C src/kernel
+	@$(MAKE) -C src/fs
 	@$(MAKE) -C src/user
+	@echo "  INITRD"
+	@tools/rba initrd.img $$(find initrd/*)
+	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img initrd.img.o
 	@echo "  LINK   " $(OUT)
-	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) $$(find src/ -name "*.o")
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) $$(find src/ -name "*.o") initrd.img.o
 
 
 clean:
 	@echo "  CLEAN"
 	@$(MAKE) -C src/kernel clean
+	@$(MAKE) -C src/fs clean
 	@$(MAKE) -C src/user clean
 	@rm -f $(OUT)
 
