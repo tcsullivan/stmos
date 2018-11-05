@@ -67,6 +67,7 @@ void SVC_Handler(void) {
 		 */
 		clock_svc(args);
 		break;
+
 	case 3: /* Filesystem-related calls
 		 * 0 - mount
 		 * 1 - open
