@@ -47,6 +47,7 @@ void SVC_Handler(void) {
 		 * 1 - fork
 		 * 2 - getpid
 		 * 3 - waitpid
+		 * 4 - sbrk (TODO bad)
 		 */
 		task_svc(args);
 		break;
@@ -71,6 +72,8 @@ void SVC_Handler(void) {
 	case 3: /* Filesystem-related calls
 		 * 0 - mount
 		 * 1 - open
+		 * 2 - close
+		 * 3 - read
 		 */
 		vfs_svc(args);
 		break;

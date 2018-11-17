@@ -1,9 +1,11 @@
 #include "vfs.h"
 
 #include <kernel/task.h>
+#include <fs/stdio.h>
 
-#define VFS_MAX_VOLS  8
-#define VFS_MAX_FILES 10
+// +1 vol for stdio, +3 fd's for stdout, in, err
+#define VFS_MAX_VOLS  (1 + 8)
+#define VFS_MAX_FILES (3 + 10)
 
 static vfs_volume vfs_volumes[VFS_MAX_VOLS];
 static vfs_file vfs_files[VFS_MAX_FILES];
@@ -19,6 +21,9 @@ void vfs_svc(uint32_t *args)
 		*((int *)args[3]) = vfs_open((const char *)args[1], args[2]);
 		break;
 	case 2:
+		*((int *)args[2]) = vfs_close(args[1]);
+		break;
+	case 3:
 		*((int *)args[4]) = vfs_read(args[1], args[2], (uint8_t *)args[3]);
 		break;
 	default:
@@ -32,6 +37,12 @@ void vfs_init(void)
 		vfs_volumes[i].flags = 0;
 	for (int i = 0; i < VFS_MAX_FILES; i++)
 		vfs_files[i].flags = 0;
+
+	vfs_mount(&stdio_funcs, 0);
+	// order is crucial
+	vfs_open("in", VFS_FILE_READ);
+	vfs_open("out", VFS_FILE_WRITE);
+	vfs_open("err", VFS_FILE_WRITE);
 }
 
 int vfs_mount(vfs_volume_funcs *funcs, uint32_t flags)
@@ -96,6 +107,26 @@ int vfs_open(const char *path, uint32_t flags)
 		vfs_volumes[drive].funcs->open(path + 3);
 
 	return file;
+}
+
+int vfs_close(int fd)
+{
+	if (fd < 0 || fd > VFS_MAX_FILES)
+		return -1;
+	if (vfs_volumes[vfs_files[fd].vol].funcs->close == 0)
+		return -1;
+	if (vfs_files[fd].pid != task_getpid())
+		return -1;
+	if (!(vfs_files[fd].flags & VFS_FILE_OPEN))
+		return 0;
+
+	// TODO care
+	/*int ret =*/ vfs_volumes[vfs_files[fd].vol].funcs->close(
+		vfs_files[fd].fsinfo);
+
+	vfs_files[fd].flags = 0;
+	vfs_files[fd].pid = 0;
+	return 0;
 }
 
 uint32_t vfs_read(int fd, uint32_t count, uint8_t *buffer)

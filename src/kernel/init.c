@@ -21,6 +21,7 @@
 #include "clock.h"
 #include "gpio.h"
 #include "heap.h"
+#include "serial.h"
 #include "task.h"
 #include "vfs.h"
 #include <fs/initrd.h>
@@ -46,6 +47,7 @@ int main(void)
 	heap_init(&__bss_end__);
 	gpio_init();
 
+	serial_init(9600);
 	vfs_init();
 	initrd_init();
 

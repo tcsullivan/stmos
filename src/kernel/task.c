@@ -46,9 +46,28 @@ void task_svc(uint32_t *args)
 		*((int *)args[4]) = task_waitpid(args[1], (int *)args[2],
 			args[3]);
 		break;
+	case 4:
+		*((void **)args[2]) = task_sbrk(args[1]);
+		break;
 	default:
 		break;
 	}
+}
+
+void *task_sbrk(uint32_t bytes)
+{
+	if (task_current->heap == 0) {
+		task_current->heap = malloc(1024 * 16);
+		return (uint8_t *)task_current->heap + (1024 * 16);
+	}
+
+	if (bytes == 0) {
+		alloc_t *alloc = (alloc_t *)((uint8_t *)task_current->heap -
+			sizeof(alloc_t));
+		return (uint8_t *)task_current->heap + alloc->size;
+	}
+
+	return (void *)-1;
 }
 
 void task_hold(uint8_t hold)
@@ -124,6 +143,7 @@ void task_purge(void)
 	// Since we're single core, no one else can claim this memory until
 	// a task switch, after which we're done with this memory anyway.
 	free(task_current->stack);
+	free(task_current->heap);
 	free(task_current);
 
 	YIELD;
@@ -163,6 +183,7 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 	t->status.state = TASK_RUNNING;
 	t->status.value = 0;
 
+	t->heap = 0;
 	t->stack = (uint32_t *)malloc(stackSize);
 	void *sp = (uint8_t *)t->stack + stackSize - 68; // excep. stack + regs
 	t->sp = sp;

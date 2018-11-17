@@ -4,6 +4,8 @@
 #include <kernel/heap.h>
 #include <kernel/vfs.h>
 
+#include "syscalls.h"
+
 void user_delay(uint32_t ms)
 {
 	register uint32_t r1 asm("r1") = ms;
@@ -13,17 +15,6 @@ void user_delay(uint32_t ms)
 		mov r1, %0; \
 		svc 2; \
 	" :: "r" (r1));
-}
-
-int fork(void)
-{
-	int result = 0;
-	asm("\
-		mov r0, 1; \
-		mov r1, %0; \
-		svc 0; \
-	" :: "r" (&result));
-	return result;
 }
 
 void user_main(void)

@@ -94,4 +94,6 @@ SECTIONS {
 		. = ALIGN(8);
 		__bss_end__ = .;
 	} > RAM
+
+	end = .;
 }

@@ -35,6 +35,7 @@ typedef struct task_t {
 	struct task_t *next; /**< pointer to the next task_t instance */
 	uint32_t *sp;        /**< pointer to the task's last sp register value */
 	uint32_t *stack;     /**< pointer to the task's stack */
+	uint32_t *heap;
 	pid_t pid;           /**< Task (Process) ID */
 	pid_t pgid;          /**< Process Group ID */
 	struct {
@@ -82,5 +83,6 @@ pid_t task_getpid(void);
 
 pid_t task_waitpid(pid_t pid, int *wstatus, int options);
 
+void *task_sbrk(uint32_t bytes);
 
 #endif // TASK_H_

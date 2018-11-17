@@ -18,12 +18,13 @@ static const uint32_t initrd_size = (uint32_t)_binary_initrd_img_size;
 
 void *initrd_open(const char *file);
 uint32_t initrd_read(void *info, uint32_t count, uint8_t *buffer);
+int initrd_close(void *info);
 
 char *initrd_getfile(uint32_t offset);
 
 static const vfs_volume_funcs initrd_funcs = {
 	initrd_open,
-	0, // close
+	initrd_close,
 	initrd_read,
 	0, // write
 	0  // readdir
@@ -49,6 +50,13 @@ void *initrd_open(const char *file)
 		}
 	}
 
+	return 0;
+}
+
+int initrd_close(void *info)
+{
+	// Nothing to do
+	free(info);
 	return 0;
 }
 
