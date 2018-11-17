@@ -8,16 +8,17 @@
 
 #ifndef REGTEST
 
-#include <sys/times.h>
+#include <syscalls.h>
 
 clock_t clock( void )
 {
-    struct tms buf;
-    if ( times( &buf ) != (clock_t)-1 )
-    {
-        return buf.tms_utime + buf.tms_stime;
-    }
-    return -1;
+      return ticks();
+//    struct tms buf;
+//    if ( times( &buf ) != (clock_t)-1 )
+//    {
+//        return buf.tms_utime + buf.tms_stime;
+//    }
+//    return -1;
 }
 
 #endif

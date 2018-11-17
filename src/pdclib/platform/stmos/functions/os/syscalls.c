@@ -1,12 +1,9 @@
-#ifndef SYSCALLS_H_
-#define SYSCALLS_H_
-
-#include <stdint.h>
+#include "syscalls.h"
 
 //
 // Task-related calls
 
-inline void _exit(int code)
+void _exit(int code)
 {
 	register uint32_t r1 __asm("r1") = code;
 	__asm("\
@@ -16,7 +13,7 @@ inline void _exit(int code)
 	" :: "r" (r1));
 }
 
-inline int fork(void)
+int fork(void)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = (uint32_t)&ret;
@@ -28,7 +25,7 @@ inline int fork(void)
 	return ret;
 }
 
-inline int getpid(void)
+int getpid(void)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = (uint32_t)&ret;
@@ -40,7 +37,7 @@ inline int getpid(void)
 	return ret;
 }
 
-inline void *sbrk(unsigned int bytes)
+void *sbrk(unsigned int bytes)
 {
 	void *ret = 0;
 	register uint32_t r1 __asm("r1") = bytes;
@@ -55,32 +52,34 @@ inline void *sbrk(unsigned int bytes)
 }
 
 //
+// Clock-related calls
+
+void delay(unsigned int ms)
+{
+	register uint32_t r1 __asm("r1") = ms;
+	__asm("\
+		mov r0, 0; \
+		mov r1, %0; \
+		svc 2; \
+	" :: "r" (r1));
+}
+
+unsigned int ticks(void)
+{
+	unsigned int ret = 0;
+	register uint32_t r1 __asm("r1") = (uint32_t)&ret;
+	__asm("\
+		mov r0, 2; \
+		mov r1, %0; \
+		svc 2; \
+	" :: "r" (r1));
+	return ret;
+}
+
+//
 // File-related calls
 
-// Indicates mounted volume
-#define VFS_MOUNTED  (1 << 0)
-// Set if filesystem is read-only
-#define VFS_READONLY (1 << 1)
-
-// Indicates an opened file
-#define VFS_FILE_OPEN  (1 << 0)
-// Indicates read permission on file
-#define VFS_FILE_READ  (1 << 1)
-// Indicates write permission on file
-#define VFS_FILE_WRITE (1 << 2)
-// Set if EOF has been reached
-#define VFS_EOF        (1 << 3)
-
-#define EOF (-1)
-
-struct dirent {
-	char name[32];
-};
-
-struct vfs_volume_funcs_t;
-typedef struct vfs_volume_funcs_t vfs_volume_funcs;
-
-inline int mount(vfs_volume_funcs *funcs, uint32_t flags)
+int mount(vfs_volume_funcs *funcs, uint32_t flags)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = (uint32_t)funcs;
@@ -96,7 +95,7 @@ inline int mount(vfs_volume_funcs *funcs, uint32_t flags)
 	return ret;
 }
 
-inline int open(const char *path, uint32_t flags)
+int open(const char *path, uint32_t flags)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = (uint32_t)path;
@@ -112,7 +111,7 @@ inline int open(const char *path, uint32_t flags)
 	return ret;
 }
 
-inline int close(int fd)
+int close(int fd)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = fd;
@@ -123,9 +122,10 @@ inline int close(int fd)
 		mov r2, %1; \
 		svc 3; \
 	" :: "r" (r1), "r" (r2));
+	return ret;
 }
 
-inline int read(int fd, uint32_t count, uint8_t *buffer)
+int read(int fd, uint32_t count, uint8_t *buffer)
 {
 	int ret = 0;
 	register uint32_t r1 __asm("r1") = fd;
@@ -143,4 +143,21 @@ inline int read(int fd, uint32_t count, uint8_t *buffer)
 	return ret;
 }
 
-#endif // SYSCALLS_H_
+int write(int fd, uint32_t count, const uint8_t *buffer)
+{
+	int ret = 0;
+	register uint32_t r1 __asm("r1") = fd;
+	register uint32_t r2 __asm("r2") = count;
+	register uint32_t r3 __asm("r3") = (uint32_t)buffer;
+	register uint32_t r4 __asm("r4") = (uint32_t)&ret;
+	__asm("\
+		mov r0, 4; \
+		mov r1, %0; \
+		mov r2, %1; \
+		mov r3, %2; \
+		mov r4, %3; \
+		svc 3; \
+	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r4));
+	return ret;
+}
+

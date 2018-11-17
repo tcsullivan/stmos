@@ -26,6 +26,9 @@ void vfs_svc(uint32_t *args)
 	case 3:
 		*((int *)args[4]) = vfs_read(args[1], args[2], (uint8_t *)args[3]);
 		break;
+	case 4:
+		*((int *)args[4]) = vfs_write(args[1], args[2], (const uint8_t *)args[3]);
+		break;
 	default:
 		break;
 	}
@@ -141,8 +144,30 @@ uint32_t vfs_read(int fd, uint32_t count, uint8_t *buffer)
 		VFS_EOF))
 		return 0;
 
-	uint32_t ret = vfs_volumes[vfs_files[fd].vol].funcs->read(vfs_files[fd].fsinfo,
-		count, buffer);
+	uint32_t ret = vfs_volumes[vfs_files[fd].vol].funcs->read(
+		vfs_files[fd].fsinfo, count, buffer);
+
+	if (ret < count)
+		vfs_files[fd].flags |= VFS_EOF;
+
+	return ret;
+}
+
+uint32_t vfs_write(int fd, uint32_t count, const uint8_t *buffer)
+{
+	if (fd < 0 || fd > VFS_MAX_FILES || count == 0 || buffer == 0)
+		return 0;
+	if (vfs_volumes[vfs_files[fd].vol].funcs->write == 0)
+		return -1;
+	if (vfs_files[fd].pid != task_getpid())
+		return 0;
+	// TODO append?
+	if ((!(vfs_files[fd].flags & VFS_FILE_WRITE)) || (vfs_files[fd].flags &
+		VFS_EOF))
+		return 0;
+
+	uint32_t ret = vfs_volumes[vfs_files[fd].vol].funcs->write(
+		vfs_files[fd].fsinfo, count, buffer);
 
 	if (ret < count)
 		vfs_files[fd].flags |= VFS_EOF;

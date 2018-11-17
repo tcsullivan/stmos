@@ -4,8 +4,6 @@
 #include <kernel/heap.h>
 #include <kernel/vfs.h>
 
-#include "syscalls.h"
-
 void user_delay(uint32_t ms)
 {
 	register uint32_t r1 asm("r1") = ms;
@@ -26,17 +24,17 @@ void user_main(void)
 	int count = vfs_read(test, 20, (uint8_t *)buf);
 	(void)count;
 
-	if (fork() == 0) {
-		while (1) {
-			gpio(GPIO_OUT, 5, 1);
-			user_delay(2000);
-		}
-	} else {
-		while (1) {
-			user_delay(1000);
-			gpio(GPIO_OUT, 5, 0);
-			user_delay(1000);
-		}
-	}
+//	if (fork() == 0) {
+//		while (1) {
+//			gpio(GPIO_OUT, 5, 1);
+//			user_delay(2000);
+//		}
+//	} else {
+//		while (1) {
+//			user_delay(1000);
+//			gpio(GPIO_OUT, 5, 0);
+//			user_delay(1000);
+//		}
+//	}
 }
 

@@ -8,21 +8,18 @@
 
 #ifndef REGTEST
 
-#include <sys/time.h>
+#include <syscalls.h>
 
 int timespec_get( struct timespec * ts, int base )
 {
     if ( base == TIME_UTC )
     {
-        /* We can make do with a really thin wrapper here. */
-        struct timeval tv;
-        if ( gettimeofday( &tv, NULL ) == 0 )
-        {
-            ts->tv_sec = tv.tv_sec;
-            ts->tv_nsec = tv.tv_usec * 1000;
-            return base;
-        }
+	unsigned int t = ticks();
+        ts->tv_sec = t / 1000;
+	ts->tv_nsec = t * 1000000;
+        return base;
     }
+
     /* Not supporting any other time base than TIME_UTC for now. */
     return 0;
 }

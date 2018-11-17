@@ -42,9 +42,11 @@ all:
 	@$(MAKE) -C src/user
 	@echo "  INITRD"
 	@tools/rba initrd.img $$(find initrd/*)
-	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img initrd.img.o
+	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img \
+		initrd.img.o
 	@echo "  LINK   " $(OUT)
-	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) $$(find src/ -name "*.o") initrd.img.o
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) \
+		$$(find src/fs src/kernel src/user -name "*.o") initrd.img.o
 
 
 clean:

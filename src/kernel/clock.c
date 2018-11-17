@@ -35,6 +35,8 @@ void clock_svc(uint32_t *args)
 		task_sleep(args[1]);
 	else if (args[0] == 1)
 		udelay(args[1]);
+	else if (args[0] == 2)
+		*((unsigned int *)args[1]) = ticks;
 }
 
 void clock_init(void)

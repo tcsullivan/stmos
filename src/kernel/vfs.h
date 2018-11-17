@@ -47,5 +47,6 @@ int vfs_mount(vfs_volume_funcs *funcs, uint32_t flags);
 int vfs_open(const char *path, uint32_t flags);
 int vfs_close(int fd);
 uint32_t vfs_read(int fd, uint32_t count, uint8_t *buffer);
+uint32_t vfs_write(int fd, uint32_t count, const uint8_t *buffer);
 
 #endif // VFS_H_

@@ -65,6 +65,7 @@ void SVC_Handler(void) {
 	case 2: /* Clock-related calls
 		 * 0 - delay
 		 * 1 - udelay
+		 * 2 - ticks
 		 */
 		clock_svc(args);
 		break;
@@ -74,6 +75,7 @@ void SVC_Handler(void) {
 		 * 1 - open
 		 * 2 - close
 		 * 3 - read
+		 * 4 - write
 		 */
 		vfs_svc(args);
 		break;
