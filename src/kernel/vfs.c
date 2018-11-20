@@ -43,12 +43,12 @@ void vfs_init(void)
 
 	vfs_mount(&stdio_funcs, 0);
 	// order is crucial
-	vfs_open("in", VFS_FILE_READ);
-	vfs_open("out", VFS_FILE_WRITE);
-	vfs_open("err", VFS_FILE_WRITE);
+	vfs_open("   in", VFS_FILE_READ);
+	vfs_open("   out", VFS_FILE_WRITE);
+	vfs_open("   err", VFS_FILE_WRITE);
 }
 
-int vfs_mount(vfs_volume_funcs *funcs, uint32_t flags)
+int vfs_mount(const vfs_volume_funcs *funcs, uint32_t flags)
 {
 	for (int i = 0; i < VFS_MAX_VOLS; i++) {
 		if (!(vfs_volumes[i].flags && VFS_MOUNTED)) {
@@ -64,9 +64,13 @@ int vfs_mount(vfs_volume_funcs *funcs, uint32_t flags)
 int vfs_get_drive(const char *path)
 {
 	// Validate parameters
-	if (path[0] == '\0' || path[1] == '\0' || path[1] != ':' ||
-		path[2] == '\0' || path[2] != '/')
+	if (path[0] == '\0')
 		return -1;
+
+	// Default to 'A' if no drive specified (A gives stdio)
+	if (path[1] == '\0' || path[1] != ':' ||
+		path[2] == '\0' || path[2] != '/')
+		return 0;
 
 	// Find chosen drive
 	int drive = -1;
@@ -103,11 +107,14 @@ int vfs_open(const char *path, uint32_t flags)
 	if (file == -1)
 		return -1;
 
+	void *fsinfo = vfs_volumes[drive].funcs->open(path + 3);
+	if (fsinfo == 0)
+		return -1;
+
 	vfs_files[file].flags = VFS_FILE_OPEN | flags;
 	vfs_files[file].vol = drive;
 	vfs_files[file].pid = task_getpid();
-	vfs_files[file].fsinfo =
-		vfs_volumes[drive].funcs->open(path + 3);
+	vfs_files[file].fsinfo = fsinfo;
 
 	return file;
 }

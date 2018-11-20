@@ -19,10 +19,11 @@ void user_main(void)
 {
 	gpio(GPIO_MODE, 5, OUTPUT);
 
-	int test = vfs_open("A:/hello", VFS_FILE_READ);
+	int test = vfs_open("B:/hello", VFS_FILE_READ);
 	char *buf = malloc(20);
 	int count = vfs_read(test, 20, (uint8_t *)buf);
-	(void)count;
+	buf[count] = '\0';
+	vfs_close(test);
 
 //	if (fork() == 0) {
 //		while (1) {

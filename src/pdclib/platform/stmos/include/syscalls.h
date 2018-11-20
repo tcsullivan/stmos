@@ -6,6 +6,11 @@
 //
 // Task-related calls
 
+#define WEXITSTATUS(s) ((s) & 0xFF)
+#define WIFEXITED(s)   ((s) & (1 << 8))
+#define WIFSIGNALED(s) ((s) & (1 << 9))
+#define WTERMSIG(s)    ((s) & (1 << 10))
+
 void _exit(int code);
 
 int fork(void);
@@ -35,7 +40,9 @@ unsigned int ticks(void);
 // Set if EOF has been reached
 #define VFS_EOF        (1 << 3)
 
+#ifndef EOF
 #define EOF (-1)
+#endif // EOF
 
 struct dirent {
 	char name[32];

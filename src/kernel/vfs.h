@@ -22,7 +22,7 @@ typedef struct vfs_volume_funcs_t {
 
 typedef struct {
 	uint32_t flags;
-	vfs_volume_funcs *funcs;
+	const vfs_volume_funcs *funcs;
 } vfs_volume;
 
 // Indicates an opened file
@@ -43,7 +43,7 @@ typedef struct {
 
 void vfs_init(void);
 
-int vfs_mount(vfs_volume_funcs *funcs, uint32_t flags);
+int vfs_mount(const vfs_volume_funcs *funcs, uint32_t flags);
 int vfs_open(const char *path, uint32_t flags);
 int vfs_close(int fd);
 uint32_t vfs_read(int fd, uint32_t count, uint8_t *buffer);

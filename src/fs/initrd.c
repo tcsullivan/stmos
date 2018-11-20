@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 
 #include <kernel/heap.h>
 #include <kernel/vfs.h>
@@ -30,6 +29,16 @@ static const vfs_volume_funcs initrd_funcs = {
 	0  // readdir
 };
 
+int initrd_strncmp(const char *a, const char *b, unsigned int n)
+{
+	for (unsigned int i = 0; i < n; i++) {
+		if (a[i] != b[i])
+			return 1;
+	}
+
+	return 0;
+}
+
 void initrd_init(void)
 {
 	vfs_mount(&initrd_funcs, VFS_READONLY);
@@ -40,7 +49,7 @@ void *initrd_open(const char *file)
 	char *ptr;
 	for (uint32_t i = 0; ptr = initrd_getfile(i), ptr != 0; i++) {
 		uint32_t len = *((uint32_t *)ptr);
-		if (!strncmp(file, ptr + 4, len)) {
+		if (!initrd_strncmp(file, ptr + 4, len)) {
 			initrd_info *file = (initrd_info *)malloc(
 				sizeof(initrd_info));
 			file->address = ptr + len + 8;

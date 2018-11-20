@@ -25,11 +25,9 @@ OBJCOPY = objcopy
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 #-mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -ggdb --specs=nosys.specs \
-	-I.. \
-	-fno-builtin -fsigned-char -ffreestanding \
-	-Wall -Werror -Wextra -pedantic \
-	-Wno-overlength-strings -Wno-discarded-qualifiers
+CFLAGS = $(MCUFLAGS) -ggdb -ffreestanding -nostdlib -fsigned-char -I.. \
+	-Wall -Werror -Wextra -pedantic
+	#-Wno-overlength-strings -Wno-discarded-qualifiers
 LFLAGS = -T link.ld
 
 OUT = main.elf

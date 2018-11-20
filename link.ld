@@ -56,26 +56,6 @@ SECTIONS {
 		. = ALIGN(8);
 	} > FLASH
 
-	/* ARM stuff */
-	.ARM.exidx : {
-		*(.ARM.exidx)
-	} > FLASH
-
-	/* init_array/fini_array (TODO understand this) */
-	.init_array : {
-		__init_array_start = .;
-		KEEP(*(.init_array.*))
-		KEEP(*(.init_array*))
-		__init_array_end = .;
-	} > FLASH
-
-	.fini_array : {
-		__fini_array_start = .;
-		KEEP(*(.fini_array.*))
-		KEEP(*(.fini_array*))
-		__fini_array_end = .;
-	} > FLASH
-
 	/* initialized data */
 	_sidata = LOADADDR(.data);
 	.data : {

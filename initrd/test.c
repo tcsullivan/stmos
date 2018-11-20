@@ -1,4 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+int main(void);
+
+void _start(void)
+{
+	exit(main());
+}
 
 int main(void)
 {

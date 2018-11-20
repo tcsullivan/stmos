@@ -87,7 +87,7 @@ void task_sleep(uint32_t ms)
 
 pid_t task_getpid(void)
 {
-	return task_current->pid;
+	return task_current != 0 ? task_current->pid : 0;
 }
 
 pid_t task_waitpid(pid_t pid, int *wstatus, int options)

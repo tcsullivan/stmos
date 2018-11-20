@@ -20,7 +20,7 @@
 
 #include "gpio.h"
 
-static const GPIO_TypeDef *gpio_ports[8] = {
+static GPIO_TypeDef *gpio_ports[8] = {
 	GPIOA, GPIOB, GPIOC, GPIOD,
 	GPIOE, GPIOF, GPIOG, GPIOH
 };
