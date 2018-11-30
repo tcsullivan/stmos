@@ -59,6 +59,7 @@ void SVC_Handler(void) {
 		 * 2 - gpio_pupd
 		 * 3 - gpio_speed
 		 * 4 - gpio_dout
+		 * 5 - gpio_din
 		 */
 		gpio_svc(args);
 		break;

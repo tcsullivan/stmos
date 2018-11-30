@@ -37,23 +37,27 @@ all:
 	@$(MAKE) -C src/kernel
 	@$(MAKE) -C src/fs
 	@$(MAKE) -C src/user
-	@echo "  INITRD"
-	@tools/rba initrd.img $$(find initrd/*)
-	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img \
-		initrd.img.o
+	@$(MAKE) -C src/initrd
 	@echo "  LINK   " $(OUT)
 	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) \
-		$$(find src/fs src/kernel src/user -name "*.o") initrd.img.o
+		$$(find src/fs src/kernel src/user src/initrd -name "*.o")
 
 crt:
 	@arm-stmos-$(CC) $(MCUFLAGS) -fsigned-char -Os -fPIE -c src/crt/crt0.c \
 		-o src/crt/crt0.o
+
+initrd:
+	@$(MAKE) -C src/initrd
+
+libgpio:
+	@$(MAKE) -C src/libgpio
 
 clean:
 	@echo "  CLEAN"
 	@$(MAKE) -C src/kernel clean
 	@$(MAKE) -C src/fs clean
 	@$(MAKE) -C src/user clean
+	@$(MAKE) -C src/initrd clean
 	@rm -f $(OUT)
 	@rm -f initrd.img initrd.img.o
 

@@ -27,7 +27,7 @@ static GPIO_TypeDef *gpio_ports[8] = {
 
 void gpio_svc(uint32_t *args)
 {
-	GPIO_TypeDef *port = gpio_ports[args[1] / 16];
+	GPIO_TypeDef *port = gpio_ports[args[1] >> 4];
 	uint32_t pin = args[1] & 0xF;
 
 	switch (args[0]) {
@@ -45,6 +45,9 @@ void gpio_svc(uint32_t *args)
 		break;
 	case 4:
 		gpio_dout(port, pin, args[2]);
+		break;
+	case 5:
+		*((int *)args[2]) = gpio_din(port, pin);
 		break;
 	}
 }
