@@ -28,18 +28,22 @@
  */
 extern void clock_init(void);
 
-uint32_t millis(void);
-
 /**
  * Sleeps for given amount of milliseconds.
  * @param ms Number of milliseconds to sleep for
  */
-void delay(uint32_t ms);
+void clock_delay(uint32_t ms);
 
 /**
  * Sleeps for the given amount of microseconds.
  * @param count Number of microseconds to sleep for
  */
-void udelay(uint32_t count);
+void clock_udelay(uint32_t count);
+
+/**
+ * Returns the number of milliseconds since clock initialization.
+ * @return milliseconds since init
+ */
+uint32_t clock_millis(void);
 
 #endif // CLOCK_H_

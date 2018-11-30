@@ -39,7 +39,7 @@ int getpid(void)
 
 void *sbrk(unsigned int bytes)
 {
-	void *ret = 0;
+	uint32_t ret = 0;
 	register uint32_t r1 __asm("r1") = bytes;
 	register uint32_t r2 __asm("r2") = (uint32_t)&ret;
 	__asm("\
@@ -48,7 +48,30 @@ void *sbrk(unsigned int bytes)
 		mov r2, %1; \
 		svc 0; \
 	" :: "r" (r1), "r" (r2));
-	return ret;
+	__asm("mov %0, r2" : "=r" (ret));
+	return *((void **)ret);
+}
+
+int execve(const char *file, char * const argv[], char * const envp[])
+{
+	volatile uint32_t ret = 0;
+	register uint32_t r1 __asm("r1") = (uint32_t)file;
+	register uint32_t r2 __asm("r2") = (uint32_t)argv;
+	register uint32_t r3 __asm("r3") = (uint32_t)envp;
+	register uint32_t r12 __asm("r12") = (uint32_t)&ret;
+	__asm("\
+		mov r0, 5; \
+		mov r1, %0; \
+		mov r2, %1; \
+		mov r3, %2; \
+		mov r12, %3; \
+		svc 0; \
+	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r12));
+
+	if (ret == (uint32_t)-1)
+		return ret;
+
+	((void (*)(void))ret)();
 }
 
 //
@@ -131,15 +154,15 @@ int read(int fd, uint32_t count, uint8_t *buffer)
 	register uint32_t r1 __asm("r1") = fd;
 	register uint32_t r2 __asm("r2") = count;
 	register uint32_t r3 __asm("r3") = (uint32_t)buffer;
-	register uint32_t r4 __asm("r4") = (uint32_t)&ret;
+	register uint32_t r12 __asm("r12") = (uint32_t)&ret;
 	__asm("\
 		mov r0, 3; \
 		mov r1, %0; \
 		mov r2, %1; \
 		mov r3, %2; \
-		mov r4, %3; \
+		mov r12, %3; \
 		svc 3; \
-	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r4));
+	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r12));
 	return ret;
 }
 
@@ -149,15 +172,15 @@ int write(int fd, uint32_t count, const uint8_t *buffer)
 	register uint32_t r1 __asm("r1") = fd;
 	register uint32_t r2 __asm("r2") = count;
 	register uint32_t r3 __asm("r3") = (uint32_t)buffer;
-	register uint32_t r4 __asm("r4") = (uint32_t)&ret;
+	register uint32_t r12 __asm("r12") = (uint32_t)&ret;
 	__asm("\
 		mov r0, 4; \
 		mov r1, %0; \
 		mov r2, %1; \
 		mov r3, %2; \
-		mov r4, %3; \
+		mov r12, %3; \
 		svc 3; \
-	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r4));
+	" :: "r" (r1), "r" (r2), "r" (r3), "r" (r12));
 	return ret;
 }
 

@@ -24,10 +24,10 @@ REGDEPFILES := $(patsubst %,$(BUILDDIR)/%.d,$(REGFILES))
 # All files belonging to the source distribution
 ALLFILES := $(SRCFILES) $(HDRFILES) $(AUXFILES)
 
-CC = arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -fsigned-char --specs=nosys.specs
+CC = arm-stmos-gcc -mcpu=cortex-m4 -mthumb -fsigned-char
 
 WARNINGS := -Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wuninitialized -Wstrict-prototypes -Wdeclaration-after-statement
-CFLAGS := -fno-builtin -g -std=c99 -I./testing -I./platform/stmos/include $(WARNINGS) $(USERFLAGS)
+CFLAGS := -fPIC -Os -ffreestanding -std=c99 -I./testing -I./platform/stmos/include $(WARNINGS) $(USERFLAGS)
 
 .PHONY: all clean srcdist tests testdrivers regtests regtestdrivers todos fixmes help
 

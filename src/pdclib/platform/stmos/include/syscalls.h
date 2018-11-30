@@ -16,6 +16,7 @@ void _exit(int code);
 int fork(void);
 int getpid(void);
 void *sbrk(unsigned int bytes);
+int execve(const char *file, char * const argv[], char * const envp[]);
 
 //
 // Clock-related calls

@@ -63,5 +63,5 @@ void init_idle(void)
 	task_start(user_main, 4096);
 
 	while (1)
-		delay(10);
+		clock_delay(10);
 }

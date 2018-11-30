@@ -18,17 +18,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-CROSS = arm-none-eabi-
+CROSS = arm-stmos-
 CC = gcc
 AS = as
 OBJCOPY = objcopy
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 #-mfloat-abi=hard -mfpu=fpv4-sp-d16
-AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -ggdb -ffreestanding -nostdlib -fsigned-char -I.. \
+AFLAGS = $(MCUFLAGS) -meabi=5
+CFLAGS = $(MCUFLAGS) -ggdb -fsigned-char -I.. \
 	-Wall -Werror -Wextra -pedantic
-	#-Wno-overlength-strings -Wno-discarded-qualifiers
-LFLAGS = -T link.ld
+LFLAGS = -T link.ld 
 
 OUT = main.elf
 
@@ -46,6 +45,9 @@ all:
 	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -o $(OUT) \
 		$$(find src/fs src/kernel src/user -name "*.o") initrd.img.o
 
+crt:
+	@arm-stmos-$(CC) $(MCUFLAGS) -fsigned-char -Os -fPIE -c src/crt/crt0.c \
+		-o src/crt/crt0.o
 
 clean:
 	@echo "  CLEAN"
@@ -53,4 +55,5 @@ clean:
 	@$(MAKE) -C src/fs clean
 	@$(MAKE) -C src/user clean
 	@rm -f $(OUT)
+	@rm -f initrd.img initrd.img.o
 

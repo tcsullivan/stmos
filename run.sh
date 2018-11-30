@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 # @file run.sh
 # Starts openocd and connects gdb to the target, for programming/debugging
 #

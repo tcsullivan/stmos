@@ -1,41 +1,29 @@
-#include "priv_gpio.h"
+/**
+ * @file user.c
+ * Userspace entry
+ *
+ * Copyright (C) 2018 Clyne Sullivan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <kernel/clock.h>
-#include <kernel/heap.h>
-#include <kernel/vfs.h>
-
-void user_delay(uint32_t ms)
-{
-	register uint32_t r1 asm("r1") = ms;
-
-	asm("\
-		mov r0, 0; \
-		mov r1, %0; \
-		svc 2; \
-	" :: "r" (r1));
-}
+#include <syscalls.h>
+#include <stdio.h>
 
 void user_main(void)
 {
-	gpio(GPIO_MODE, 5, OUTPUT);
-
-	int test = vfs_open("B:/hello", VFS_FILE_READ);
-	char *buf = malloc(20);
-	int count = vfs_read(test, 20, (uint8_t *)buf);
-	buf[count] = '\0';
-	vfs_close(test);
-
-//	if (fork() == 0) {
-//		while (1) {
-//			gpio(GPIO_OUT, 5, 1);
-//			user_delay(2000);
-//		}
-//	} else {
-//		while (1) {
-//			user_delay(1000);
-//			gpio(GPIO_OUT, 5, 0);
-//			user_delay(1000);
-//		}
-//	}
+	//gpio(GPIO_MODE, 5, OUTPUT);
+	execve("B:/init", 0, 0);
 }
 

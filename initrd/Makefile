@@ -1,6 +1,12 @@
+##
+# A simple Makefile for building executables loadable by stmos.
+#
+
+ARCH = arm-stmos-
+CC = gcc -mcpu=cortex-m4 -mthumb -fsigned-char
+CFLAGS = -Os -fPIE
+
 all:
-	@arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -fsigned-char -Os \
-		-nostdinc -nostdlib \
-		-fdata-sections -ffunction-sections -Wl,--gc-sections \
-		-I../src/pdclib/include -I../src/pdclib/platform/stmos/include \
-		test.c ../src/pdclib/pdclib.a -s -o test
+	@$(ARCH)$(CC) $(CFLAGS) init.c -o init
+	@arm-stmos-strip init
+

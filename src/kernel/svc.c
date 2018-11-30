@@ -1,6 +1,6 @@
 /**
  * @file svc.c
- * An unused handler for SVC calls
+ * Handler code for SVC calls
  *
  * Copyright (C) 2018 Clyne Sullivan
  *
@@ -48,6 +48,7 @@ void SVC_Handler(void) {
 		 * 2 - getpid
 		 * 3 - waitpid
 		 * 4 - sbrk (TODO bad)
+		 * 5 - execve
 		 */
 		task_svc(args);
 		break;

@@ -44,7 +44,7 @@ void serial_put(int c)
 char serial_get(void)
 {
 	while (!(USART2->ISR & USART_ISR_RXNE))
-		delay(10);
+		clock_delay(10);
 	return USART2->RDR & 0xFF;
 }
 

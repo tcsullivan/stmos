@@ -23,20 +23,18 @@
 #include <arch/stm/stm32l476xx.h>
 
 // ticks since init
-volatile uint32_t ticks = 0;
+volatile uint32_t clock_ticks = 0;
 
 volatile uint8_t tim2_finished = 1;
-
-extern task_t *current;
 
 void clock_svc(uint32_t *args)
 {
 	if (args[0] == 0)
 		task_sleep(args[1]);
 	else if (args[0] == 1)
-		udelay(args[1]);
+		clock_udelay(args[1]);
 	else if (args[0] == 2)
-		*((unsigned int *)args[1]) = ticks;
+		*((unsigned int *)args[1]) = clock_millis();
 }
 
 void clock_init(void)
@@ -79,18 +77,13 @@ void clock_init(void)
 	TIM2->CR1 |= TIM_CR1_OPM | TIM_CR1_CEN;
 }
 
-uint32_t millis(void)
+void clock_delay(uint32_t count)
 {
-	return ticks;
+	uint32_t target = clock_ticks + count;
+	while (clock_ticks < target);
 }
 
-void delay(uint32_t count)
-{
-	uint32_t target = ticks + count;
-	while (ticks < target);
-}
-
-void udelay(uint32_t count)
+void clock_udelay(uint32_t count)
 {
 	tim2_finished = 0;
 	TIM2->ARR = count;
@@ -98,13 +91,18 @@ void udelay(uint32_t count)
 	while (tim2_finished == 0);
 }
 
+uint32_t clock_millis(void)
+{
+	return clock_ticks;
+}
+
 void SysTick_Handler(void)
 {
 	// just keep counting
-	ticks++;
+	clock_ticks++;
 
 	// task switch every four ticks (4ms)
-	if (!(ticks & 3))
+	if (!(clock_ticks & 3))
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
 

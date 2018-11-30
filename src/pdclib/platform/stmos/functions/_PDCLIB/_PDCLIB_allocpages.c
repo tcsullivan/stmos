@@ -17,43 +17,47 @@
 
 #include "pdclib/_PDCLIB_glue.h"
 
-static void * membreak = NULL;
+//static void * membreak = NULL;
 
 void * _PDCLIB_allocpages( int const n )
 {
-    void * oldbreak;
-    if ( membreak == NULL )
-    {
-        /* first call, make sure end-of-heap is page-aligned */
-        intptr_t unaligned = 0;
-        membreak = sbrk( 0 );
-        unaligned = _PDCLIB_PAGESIZE - (intptr_t)membreak % _PDCLIB_PAGESIZE;
-        if ( unaligned < _PDCLIB_PAGESIZE )
-        {
-            /* end-of-heap not page-aligned - adjust */
-            if ( sbrk( unaligned ) != membreak )
-            {
-                /* error */
-                return NULL;
-            }
-            membreak = (char *)membreak + unaligned;
-        }
-    }
-    /* increasing or decreasing heap - standard operation */
-    oldbreak = membreak;
-    membreak = (void *)( (char *)membreak + ( n * _PDCLIB_PAGESIZE ) );
+	// TODO eek
+	// sbrk actually mallocs (kernel side)
+	return sbrk(n * _PDCLIB_PAGESIZE);
 
-    if ( sbrk( (char*)membreak - (char*)oldbreak ) == membreak )
-    {
-        /* successful */
-        return oldbreak;
-    }
-    else
-    {
-        /* out of memory */
-        membreak = oldbreak;
-        return NULL;
-    }
+//    void * oldbreak;
+//    if ( membreak == NULL )
+//    {
+//        /* first call, make sure end-of-heap is page-aligned */
+//        intptr_t unaligned = 0;
+//        membreak = sbrk( 0 );
+//        unaligned = _PDCLIB_PAGESIZE - (intptr_t)membreak % _PDCLIB_PAGESIZE;
+//        if ( unaligned < _PDCLIB_PAGESIZE )
+//        {
+//            /* end-of-heap not page-aligned - adjust */
+//            if ( sbrk( unaligned ) != membreak )
+//            {
+//                /* error */
+//                return NULL;
+//            }
+//            membreak = (char *)membreak + unaligned;
+//        }
+//    }
+//    /* increasing or decreasing heap - standard operation */
+//    oldbreak = membreak;
+//    membreak = (void *)( (char *)membreak + ( n * _PDCLIB_PAGESIZE ) );
+//
+//    if ( sbrk( (char*)membreak - (char*)oldbreak ) == membreak )
+//    {
+//        /* successful */
+//        return oldbreak;
+//    }
+//    else
+//    {
+//        /* out of memory */
+//        membreak = oldbreak;
+//        return NULL;
+//    }
 }
 
 #endif

@@ -19,24 +19,42 @@
    descriptors 0, 1, and 2 respectively.
 */
 /* TODO: This is proof-of-concept, requires finetuning. */
-static char _PDCLIB_sin_buffer[BUFSIZ];
-static char _PDCLIB_sout_buffer[BUFSIZ];
-static char _PDCLIB_serr_buffer[BUFSIZ];
+/*static char _PDCLIB_serr_buf[BUFSIZ];
+static char _PDCLIB_sout_buf[BUFSIZ];
+static char _PDCLIB_sin_buf[BUFSIZ];
+static unsigned char _PDCLIB_serr_unget[_PDCLIB_UNGETCBUFSIZE];
+static unsigned char _PDCLIB_sout_unget[_PDCLIB_UNGETCBUFSIZE];
+static unsigned char _PDCLIB_sin_unget[_PDCLIB_UNGETCBUFSIZE];
 
-static unsigned char _PDCLIB_sin_ungetbuf[_PDCLIB_UNGETCBUFSIZE];
-static unsigned char _PDCLIB_sout_ungetbuf[_PDCLIB_UNGETCBUFSIZE];
-static unsigned char _PDCLIB_serr_ungetbuf[_PDCLIB_UNGETCBUFSIZE];
+static struct _PDCLIB_file_t _PDCLIB_serr = {
+	2,
+	_PDCLIB_serr_buf, BUFSIZ, 0, 0,{ 0, 0 },
+	0, _PDCLIB_serr_unget,
+	_IOLBF | _PDCLIB_FWRITE | _PDCLIB_STATIC,
+	NULL, NULL
+};
+static struct _PDCLIB_file_t _PDCLIB_sout = {
+	1,
+	_PDCLIB_sout_buf, BUFSIZ, 0, 0,{ 0, 0 },
+	0, _PDCLIB_sout_unget,
+	_IOLBF | _PDCLIB_FWRITE | _PDCLIB_STATIC,
+	NULL, &_PDCLIB_serr
+};
+static struct _PDCLIB_file_t _PDCLIB_sin = {
+	0,
+	_PDCLIB_sin_buf, BUFSIZ, 0, 0,{ 0, 0 },
+	0, _PDCLIB_sin_unget,
+	_IOLBF | _PDCLIB_FREAD | _PDCLIB_STATIC,
+	NULL, &_PDCLIB_sout
+};*/
 
-static struct _PDCLIB_file_t _PDCLIB_serr = { 2, _PDCLIB_serr_buffer, BUFSIZ, 0, 0, { 0, 0 }, 0, _PDCLIB_serr_ungetbuf, _IONBF | _PDCLIB_FWRITE | _PDCLIB_STATIC, NULL, NULL };
-static struct _PDCLIB_file_t _PDCLIB_sout = { 1, _PDCLIB_sout_buffer, BUFSIZ, 0, 0, { 0, 0 }, 0, _PDCLIB_sout_ungetbuf, _IOLBF | _PDCLIB_FWRITE | _PDCLIB_STATIC, NULL, &_PDCLIB_serr };
-static struct _PDCLIB_file_t _PDCLIB_sin  = { 0, _PDCLIB_sin_buffer, BUFSIZ, 0, 0, { 0, 0 }, 0, _PDCLIB_sin_ungetbuf, _IOLBF | _PDCLIB_FREAD | _PDCLIB_STATIC, NULL, &_PDCLIB_sout };
-
-struct _PDCLIB_file_t * stdin  = &_PDCLIB_sin;
-struct _PDCLIB_file_t * stdout = &_PDCLIB_sout;
-struct _PDCLIB_file_t * stderr = &_PDCLIB_serr;
+struct _PDCLIB_file_t *stdin  = 0;//&_PDCLIB_sin;
+struct _PDCLIB_file_t *stdout = 0;//&_PDCLIB_sout;
+struct _PDCLIB_file_t *stderr = 0;//&_PDCLIB_serr;
 
 /* FIXME: This approach is a possible attack vector. */
-struct _PDCLIB_file_t * _PDCLIB_filelist = &_PDCLIB_sin;
+// TODO used by remove/tmpfile
+struct _PDCLIB_file_t *_PDCLIB_filelist = 0;//&_PDCLIB_sin;
 
 /* "C" locale - defaulting to ASCII-7.
    1 kByte (+ 4 byte) of <ctype.h> data.

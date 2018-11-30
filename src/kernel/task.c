@@ -19,6 +19,7 @@
  */
 
 #include "clock.h"
+#include "elf.h"
 #include "heap.h"
 #include "task.h"
 #include <arch/stm/stm32l476xx.h>
@@ -49,6 +50,10 @@ void task_svc(uint32_t *args)
 	case 4:
 		*((void **)args[2]) = task_sbrk(args[1]);
 		break;
+	case 5:
+		*((uint32_t *)args[4]) = elf_execve((const char *)args[1],
+			(char * const *)args[2], (char * const *)args[3]);
+		break;
 	default:
 		break;
 	}
@@ -56,18 +61,19 @@ void task_svc(uint32_t *args)
 
 void *task_sbrk(uint32_t bytes)
 {
-	if (task_current->heap == 0) {
+	return malloc(bytes);
+
+	/*if (task_current->heap == 0)
 		task_current->heap = malloc(1024 * 16);
-		return (uint8_t *)task_current->heap + (1024 * 16);
-	}
 
 	if (bytes == 0) {
 		alloc_t *alloc = (alloc_t *)((uint8_t *)task_current->heap -
 			sizeof(alloc_t));
-		return (uint8_t *)task_current->heap + alloc->size;
+		return (uint8_t *)(((uint32_t)task_current->heap + alloc->size)
+			& ~0xFFF);
 	}
 
-	return (void *)-1;
+	return (void *)-1;*/
 }
 
 void task_hold(uint8_t hold)
@@ -81,7 +87,7 @@ void task_hold(uint8_t hold)
 void task_sleep(uint32_t ms)
 {
 	task_current->status.state = TASK_SLEEPING;
-	task_current->status.value = millis() + ms;
+	task_current->status.value = clock_millis() + ms;
 	YIELD;
 }
 
@@ -312,7 +318,7 @@ void PendSV_Handler(void)
 	" : "=r" (task_current->sp));
 
 	// Load next task
-	uint32_t ticks = millis();
+	uint32_t ticks = clock_millis();
 	do {
 		task_current = task_current->next;
 		if (task_current == 0)

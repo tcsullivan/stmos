@@ -1,5 +1,6 @@
 /**
  * @file linker.ld
+ * Linker script for the kernel/os
  *
  * Copyright (C) 2018 Clyne Sullivan
  *
