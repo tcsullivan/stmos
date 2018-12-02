@@ -143,7 +143,7 @@ struct _PDCLIB_lldiv_t
 #define _PDCLIB_SIG_ATOMIC INT
 
 /* Result type of the 'sizeof' operator (must be unsigned) */
-#define _PDCLIB_size unsigned long
+#define _PDCLIB_size unsigned int
 #define _PDCLIB_SIZE ULONG
 
 /* Large enough an integer to hold all character codes of the largest supported

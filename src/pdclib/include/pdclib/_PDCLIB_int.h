@@ -12,7 +12,7 @@
 /* would be considered a bug / missing feature: notify the author(s).         */
 /* -------------------------------------------------------------------------- */
 
-#include <stdbool.h>
+//#include <stdbool.h>
 
 #include "pdclib/_PDCLIB_config.h"
 #include "pdclib/_PDCLIB_aux.h"

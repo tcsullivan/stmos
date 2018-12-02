@@ -27,7 +27,7 @@ ALLFILES := $(SRCFILES) $(HDRFILES) $(AUXFILES)
 CC = arm-stmos-gcc -mcpu=cortex-m4 -mthumb -fsigned-char
 
 WARNINGS := -Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wuninitialized -Wstrict-prototypes -Wdeclaration-after-statement
-CFLAGS := -fPIC -Os -ffreestanding -std=c99 -I./testing -I./platform/stmos/include $(WARNINGS) $(USERFLAGS)
+CFLAGS := -fPIC -Os -g -ffreestanding -std=c99 -I./testing -I./platform/stmos/include $(WARNINGS) $(USERFLAGS)
 
 .PHONY: all clean srcdist tests testdrivers regtests regtestdrivers todos fixmes help
 

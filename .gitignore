@@ -3,3 +3,5 @@
 *.swo
 initrd.img
 main.elf
+arm-stmos/gcc-8.2.0
+arm-stmos/binutils-2.31.1
