@@ -3,10 +3,9 @@
 A special binutils/gcc toolchain is necessary to build stmos and associated
 programs. For convenience, a bash script has been written to attempt to automate
 the majority of the compilation/installation process. This process is based of
-off various tutorials from [osdev.org](wiki.osdev.org). 
+off various tutorials from [osdev.org](https://wiki.osdev.org). 
   
-Some programs are required for the build process. A list can be found [here]
-(https://wiki.osdev.org/GCC_Cross-Compiler#Installing_Dependencies). Once
+Some programs are required for the build process. A list can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#Installing_Dependencies). Once
 installed, just run the script:  
 ```
 ./create-toolchain.sh
