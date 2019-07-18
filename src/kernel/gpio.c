@@ -25,29 +25,29 @@ static GPIO_TypeDef *gpio_ports[8] = {
 	GPIOE, GPIOF, GPIOG, GPIOH
 };
 
-void gpio_svc(uint32_t *args)
+void gpio_svc(uint32_t n, uint32_t *ret, uint32_t *args)
 {
-	GPIO_TypeDef *port = gpio_ports[args[1] >> 4];
-	uint32_t pin = args[1] & 0xF;
+	GPIO_TypeDef *port = gpio_ports[args[0] >> 4];
+	uint32_t pin = args[0] & 0xF;
 
-	switch (args[0]) {
+	switch (n) {
 	case 0:
-		gpio_mode(port, pin, args[2]);
+		gpio_mode(port, pin, args[1]);
 		break;
 	case 1:
-		gpio_type(port, pin, args[2]);
+		gpio_type(port, pin, args[1]);
 		break;
 	case 2:
-		gpio_pupd(port, pin, args[2]);
+		gpio_pupd(port, pin, args[1]);
 		break;
 	case 3:
-		gpio_speed(port, pin, args[2]);
+		gpio_speed(port, pin, args[1]);
 		break;
 	case 4:
-		gpio_dout(port, pin, args[2]);
+		gpio_dout(port, pin, args[1]);
 		break;
 	case 5:
-		*((int *)args[2]) = gpio_din(port, pin);
+		*((int *)ret) = gpio_din(port, pin);
 		break;
 	}
 }

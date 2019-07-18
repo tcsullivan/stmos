@@ -16,6 +16,7 @@ all: $(OFILES)
 files/%: %.c
 	@echo "  CC     " $<
 	@$(CROSS)$(CC) $(CFLAGS) $< ../libgpio/libgpio.a -o $@
+	@cp -v $@ init.debug
 	@$(CROSS)strip $@
 
 clean:

@@ -27,14 +27,14 @@ volatile uint32_t clock_ticks = 0;
 
 volatile uint8_t tim2_finished = 1;
 
-void clock_svc(uint32_t *args)
+void clock_svc(uint32_t n, uint32_t *ret, uint32_t *args)
 {
-	if (args[0] == 0)
-		task_sleep(args[1]);
-	else if (args[0] == 1)
-		clock_udelay(args[1]);
-	else if (args[0] == 2)
-		*((unsigned int *)args[1]) = clock_millis();
+	if (n == 0)
+		task_sleep(args[0]);
+	else if (n == 1)
+		clock_udelay(args[0]);
+	else if (n == 2)
+		*((unsigned int *)ret) = clock_millis();
 }
 
 void clock_init(void)

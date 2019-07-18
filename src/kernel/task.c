@@ -31,28 +31,28 @@ static task_t *task_queue;
 static uint8_t task_disable = 0;
 static pid_t task_next_pid = 0;
 
-void task_svc(uint32_t *args)
+void task_svc(uint32_t n, uint32_t *ret, uint32_t *args)
 {
-	switch (args[0]) {
+	switch (n) {
 	case 0:
-		task_exit(args[1]);
+		task_exit(args[0]);
 		break;
 	case 1:
-		*((int *)args[1]) = task_fork();
+		*((int *)ret) = task_fork();
 		break;
 	case 2:
-		*((int *)args[1]) = task_getpid();
+		*((int *)ret) = task_getpid();
 		break;
 	case 3:
-		*((int *)args[4]) = task_waitpid(args[1], (int *)args[2],
-			args[3]);
+		*((int *)ret) = task_waitpid(args[0], (int *)args[1],
+			args[2]);
 		break;
 	case 4:
-		*((void **)args[2]) = task_sbrk(args[1]);
+		*((void **)ret) = task_sbrk(args[0]);
 		break;
 	case 5:
-		*((uint32_t *)args[4]) = elf_execve((const char *)args[1],
-			(char * const *)args[2], (char * const *)args[3]);
+		*((uint32_t *)ret) = elf_execve((const char *)args[0],
+			(char * const *)args[1], (char * const *)args[2]);
 		break;
 	default:
 		break;
@@ -325,7 +325,7 @@ void PendSV_Handler(void)
 			task_current = task_queue;
 
 		if (task_current->status.state == TASK_SLEEPING &&
-			task_current->status.value <= ticks)
+			task_current->status.value < ticks)
 			task_current->status.state = TASK_RUNNING;
 	} while (task_current->status.state != TASK_RUNNING);
 

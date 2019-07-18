@@ -35,24 +35,24 @@ static vfs_file vfs_files[VFS_MAX_FILES];
 	if (pid != fpid && fpid != 0) \
 		return 0; }
 
-void vfs_svc(uint32_t *args)
+void vfs_svc(uint32_t n, uint32_t *ret, uint32_t *args)
 {
-	switch (args[0]) {
+	switch (n) {
 	case 0:
-		*((int *)args[3]) = vfs_mount((vfs_volume_funcs *)args[1],
-			args[2]);
+		*((int *)ret) = vfs_mount((vfs_volume_funcs *)args[0],
+			args[1]);
 		break;
 	case 1:
-		*((int *)args[3]) = vfs_open((const char *)args[1], args[2]);
+		*((int *)ret) = vfs_open((const char *)args[0], args[1]);
 		break;
 	case 2:
-		*((int *)args[2]) = vfs_close(args[1]);
+		*((int *)ret) = vfs_close(args[0]);
 		break;
 	case 3:
-		*((int *)args[4]) = vfs_read(args[1], args[2], (uint8_t *)args[3]);
+		*((int *)ret) = vfs_read(args[0], args[1], (uint8_t *)args[2]);
 		break;
 	case 4:
-		*((int *)args[4]) = vfs_write(args[1], args[2], (const uint8_t *)args[3]);
+		*((int *)ret) = vfs_write(args[0], args[1], (const uint8_t *)args[2]);
 		break;
 	default:
 		break;

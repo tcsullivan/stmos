@@ -23,22 +23,25 @@
 #include "clock.h"
 #include "task.h"
 
-extern void gpio_svc(uint32_t *);
-extern void clock_svc(uint32_t *);
-extern void task_svc(uint32_t *);
-extern void vfs_svc(uint32_t *args);
+extern void gpio_svc(uint32_t, uint32_t *, uint32_t *);
+extern void clock_svc(uint32_t, uint32_t *, uint32_t *);
+extern void task_svc(uint32_t, uint32_t *, uint32_t *);
+extern void vfs_svc(uint32_t, uint32_t *, uint32_t *args);
 
 void SVC_Handler(void) {
-	uint32_t *args;
+	uint32_t *stack;
 
 	asm("\
 		tst lr, #4; \
 		ite eq; \
 		mrseq %0, msp; \
 		mrsne %0, psp; \
-	" : "=r" (args));
+	" : "=r" (stack));
 
-	int svc_number = ((char *)args[6])[-2];
+	int svc_number = ((char *)stack[6])[-2];
+	uint32_t min_number = stack[0];
+	uint32_t *ret = (uint32_t *)stack[1];
+	uint32_t *args = (uint32_t *)stack[2];
 
 	switch (svc_number) {
 	case -1:
@@ -50,7 +53,7 @@ void SVC_Handler(void) {
 		 * 4 - sbrk (TODO bad)
 		 * 5 - execve
 		 */
-		task_svc(args);
+		task_svc(min_number, ret, args);
 		break;
 
 	case 1: /* GPIO-related calls
@@ -61,7 +64,7 @@ void SVC_Handler(void) {
 		 * 4 - gpio_dout
 		 * 5 - gpio_din
 		 */
-		gpio_svc(args);
+		gpio_svc(min_number, ret, args);
 		break;
 
 	case 2: /* Clock-related calls
@@ -69,7 +72,7 @@ void SVC_Handler(void) {
 		 * 1 - udelay
 		 * 2 - ticks
 		 */
-		clock_svc(args);
+		clock_svc(min_number, ret, args);
 		break;
 
 	case 3: /* Filesystem-related calls
@@ -79,7 +82,7 @@ void SVC_Handler(void) {
 		 * 3 - read
 		 * 4 - write
 		 */
-		vfs_svc(args);
+		vfs_svc(min_number, ret, args);
 		break;
 	default:
 		break;

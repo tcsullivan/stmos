@@ -10,8 +10,7 @@
 int main(void)
 {
 	gpioMode(5, OUTPUT);
-
-	printf("Hello, world!\n");
+	printf("Hello, world!\n\r");
 
 	while (1) {
 		gpioWrite(5, 1);
