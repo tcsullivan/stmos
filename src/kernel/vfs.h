@@ -143,3 +143,4 @@ int vfs_seek(int fd, int32_t offset, int whence);
 int32_t vfs_tell(int fd);
 
 #endif // VFS_H_
+

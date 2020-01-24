@@ -31,6 +31,7 @@ extern void vfs_svc(uint32_t, uint32_t *, uint32_t *args);
 void SVC_Handler(void) {
 	uint32_t *stack;
 
+    // Get the appropriate stack (either kernel or process)
 	asm("\
 		tst lr, #4; \
 		ite eq; \
@@ -44,13 +45,13 @@ void SVC_Handler(void) {
 	uint32_t *args = (uint32_t *)stack[2];
 
 	switch (svc_number) {
-	case -1:
+	case -1: // TODO why?
 	case 0: /* Task-related calls
 		 * 0 - _exit
 		 * 1 - fork
 		 * 2 - getpid
 		 * 3 - waitpid
-		 * 4 - sbrk (TODO bad)
+		 * 4 - sbrk (TODO poor implementation)
 		 * 5 - execve
 		 */
 		task_svc(min_number, ret, args);

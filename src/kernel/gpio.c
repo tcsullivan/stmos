@@ -91,3 +91,4 @@ uint32_t gpio_din(GPIO_TypeDef *port, uint32_t pin)
 {
 	return port->IDR & (1 << pin);
 }
+

@@ -23,7 +23,8 @@
 
 void user_main(void)
 {
-	//gpio(GPIO_MODE, 5, OUTPUT);
+    // Just load the init program from the initrd.
+    // (A:/ is stdio, B:/ is initrd)
 	execve("B:/init", 0, 0);
 }
 

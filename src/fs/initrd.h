@@ -27,3 +27,4 @@
 void initrd_init(void);
 
 #endif // INITRD_H_
+

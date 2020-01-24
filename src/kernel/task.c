@@ -146,8 +146,9 @@ void task_purge(void)
 	}
 
 	// Free this thread's stack, and task data.
-	// Since we're single core, no one else can claim this memory until
-	// a task switch, after which we're done with this memory anyway.
+    // The scheduler still needs to use the data we're about to free; however,
+	// our single-core implementation keeps us safe from anyone else claiming
+    // this memory in the meantime.
 	free(task_current->stack);
 	free(task_current->heap);
 	free(task_current);
@@ -168,7 +169,8 @@ void task_doexit(void)
 
 /**
  * 'Prepares' task for running.
- * Calls the task's main code, setting task_doexit() (_exit) as the return point.
+ * Calls the task's main code after making task_doexit() (_exit) main's return
+ * point.
  */
 __attribute__ ((naked))
 void task_crt0(void)
@@ -191,7 +193,7 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 
 	t->heap = 0;
 	t->stack = (uint32_t *)malloc(stackSize);
-	void *sp = (uint8_t *)t->stack + stackSize - 68; // excep. stack + regs
+	void *sp = (uint8_t *)t->stack + stackSize - 68; // exception stack + regs
 	t->sp = sp;
 
 	/*
@@ -215,6 +217,7 @@ task_t *task_create(void (*code)(void), uint16_t stackSize)
 
 void task_init(void (*init)(void), uint16_t stackSize)
 {
+    // Create a dummy current task that we'll "exit" from
 	task_current = (task_t *)malloc(sizeof(task_t));
 	task_current->next = 0;
 	task_current->stack = 0; // free() is called on this
@@ -222,10 +225,12 @@ void task_init(void (*init)(void), uint16_t stackSize)
 	task_current->status.state = TASK_SLEEPING;
 	task_current->status.value = 1000;
 
+    // Place the init task in the queue to take the dummy task's place
 	task_queue = task_create(init, stackSize);
 
 	task_disable = 0;
 
+    // Enter userspace process mode
 	// bit 0 - priv, bit 1 - psp/msp
 	asm("\
 		isb; \
@@ -237,7 +242,7 @@ void task_init(void (*init)(void), uint16_t stackSize)
 		msr control, r0; \
 	");
 
-	// exit the current (fake) task
+	// Exit the current (fake) task
 	task_doexit();
 }
 
@@ -307,9 +312,9 @@ void PendSV_Handler(void)
 	if (task_disable != 0)
 		asm("bx lr");
 
-	// TODO get back to c, implement task sleeping
+	// TODO get back to c, implement task sleeping TODO did we do this?
 
-	// Save current stack pointer
+	// Finish saving current state
 	asm("\
 		mrs r0, psp; \
 		isb; \

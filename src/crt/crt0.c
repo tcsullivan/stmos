@@ -25,12 +25,20 @@ extern int main(int, char **);
 
 static void stdio_init(void);
 
+/**
+ * Entry point for userland programs.
+ * Sets up stdio, then enters the program's main() before exiting with main()'s
+ * return code.
+ */
 void _start(void)
 {
 	stdio_init();
 	exit(main(0, 0));
 }
 
+/**
+ * Initializes file handles for stdout, stdin, and stderr.
+ */
 void stdio_init(void)
 {
 	stderr = calloc(1, sizeof(FILE));

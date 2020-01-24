@@ -23,6 +23,9 @@
 
 #include <stdint.h>
 
+/**
+ * Internal structure place before memory allocations, to track allocation size.
+ */
 typedef struct {
 	uint32_t size;
 	void *next;
@@ -30,13 +33,14 @@ typedef struct {
 
 /**
  * Initializes memory management of the given heap.
- * No overflow stuff is done, so... be careful.
+ * Note: Heap size is not accounted for.
  * @param buf The heap to use for allocations
  */
 void heap_init(void *buf);
 
 /**
- * Returns the amount of free, allocatable memory, in bytes.
+ * Returns the amount of free, allocatable memory, in bytes, assuming that the
+ * heap has from its initial location to the end of SRAM.
  * @return Amount of free memory in bytes
  */
 uint32_t heap_free(void);
@@ -64,3 +68,4 @@ void *calloc(uint32_t count, uint32_t size);
 void free(void *buf);
 
 #endif // HEAP_H_
+

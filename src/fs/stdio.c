@@ -39,6 +39,9 @@ const vfs_volume_funcs stdio_funcs = {
 
 void *stdio_open(const char *path)
 {
+    /**
+     * All we need is the correct file handle number.
+     */
 	int *id = malloc(sizeof(uint32_t));
 
 	if (path[0] == 'o' && path[1] == 'u' && path[2] == 't')
@@ -53,13 +56,13 @@ void *stdio_open(const char *path)
 
 int stdio_close(vfs_file_info *info)
 {
-	// Nothing to do
 	free(info->fsinfo);
 	return 0;
 }
 
 uint32_t stdio_read(vfs_file_info *info, uint32_t count, uint8_t *buffer)
 {
+    // TODO?
 	(void)info;
 	(void)count;
 	(void)buffer;
@@ -68,6 +71,7 @@ uint32_t stdio_read(vfs_file_info *info, uint32_t count, uint8_t *buffer)
 
 uint32_t stdio_write(vfs_file_info *info, uint32_t count, const uint8_t *buffer)
 {
+    // For now, output to serial
 	(void)info;
 	for (uint32_t i = 0; i < count; i++)
 		serial_put(buffer[i]);

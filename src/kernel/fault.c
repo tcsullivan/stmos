@@ -24,3 +24,4 @@ void HardFault_Handler(void)
 	// TODO have a real fault handler...
 	while (1);
 }
+

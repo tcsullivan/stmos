@@ -25,7 +25,6 @@
 
 #define WIFEXITED(w)   (w & (1 << 8))
 #define WEXITSTATUS(w) (w & 0xFF)
-
 typedef uint16_t pid_t;
 
 /**
@@ -66,23 +65,44 @@ void task_init(void (*init)(void), uint16_t stackSize);
 void task_start(void (*task)(void), uint16_t stackSize);
 
 /**
- * Allows task switching to be disabled, for low-level actions.
+ * Allows task switching to be disabled, for low-level/time-critical  operations.
  * Multiple holds can be placed, and all must be removed to continue task
  * switching.
  * @param hold non-zero for hold, zero to remove hold
  */
 void task_hold(uint8_t hold);
 
+/**
+ * Puts the task to sleep for the given duration.
+ * @param ms Milliseconds to sleep for
+ */
 void task_sleep(uint32_t ms);
 
+/**
+ * Called by the task when it's ready to exit.
+ * @param code Task's exit code
+ */
 void task_exit(int code);
 
+/**
+ * Forks the task into two processes.
+ */
 int task_fork(void);
 
+/**
+ * Gets the task's PID.
+ */
 pid_t task_getpid(void);
 
+/**
+ * Waits for a task to change state (TODO confirm).
+ */
 pid_t task_waitpid(pid_t pid, int *wstatus, int options);
 
+/**
+ * TODO
+ */
 void *task_sbrk(uint32_t bytes);
 
 #endif // TASK_H_
+

@@ -24,6 +24,12 @@
 
 #include <string.h>
 
+/**
+ * Finds the section with the given name in the ELF data, e.g. ".bss".
+ * @param ehdr ELF file header
+ * @param name Name of the section
+ * @return Section header of the section, NULL if not found
+ */
 Elf32_Shdr *elf_find_section(Elf32_Ehdr *ehdr, const char *name)
 {
 	Elf32_Shdr *shdr = (Elf32_Shdr *)((char *)ehdr + ehdr->e_shoff);
@@ -80,6 +86,7 @@ uint32_t elf_execve(const char *file, char * const argv[], char * const envp[])
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)elfData;
 	Elf32_Phdr *phdr = (Elf32_Phdr *)(elfData + ehdr->e_phoff);
 
+    // Search for the loadable program header
 	for (Elf32_Half i = 0; i < ehdr->e_phnum; i++) {
 		if (phdr->p_type == PT_LOAD) {
 			// There should only be one PT_LOAD section...
@@ -87,6 +94,7 @@ uint32_t elf_execve(const char *file, char * const argv[], char * const envp[])
 				while (1);
 			ELF_OFFSET = (uint32_t)malloc(phdr->p_memsz + 8) & ~7;
 
+            // Copy the program data into RAM for execution
 			uint8_t *src = (uint8_t *)elfData + phdr->p_offset;
 			uint8_t *dst = (uint8_t *)(ELF_OFFSET + phdr->p_vaddr);
 			for (uint32_t j = 0; j < phdr->p_filesz; j++)
@@ -114,7 +122,7 @@ uint32_t elf_execve(const char *file, char * const argv[], char * const envp[])
 			gotArray[i] += ELF_OFFSET;
 	}
 
-	// Run any constructors
+	// Run any initial constructors
 	Elf32_Shdr *initArraySection = elf_find_section(ehdr, ".init_array");
 	if (initArraySection != 0) {
 		Elf32_Addr *initArray = (Elf32_Addr *)(ELF_OFFSET +

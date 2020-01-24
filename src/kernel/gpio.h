@@ -129,3 +129,4 @@ void gpio_dout(GPIO_TypeDef *port, uint32_t pin, uint32_t val);
 uint32_t gpio_din(GPIO_TypeDef *port, uint32_t pin);
 
 #endif // GPIO_H_
+

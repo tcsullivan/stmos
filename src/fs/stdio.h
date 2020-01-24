@@ -29,3 +29,4 @@
 extern const vfs_volume_funcs stdio_funcs;
 
 #endif // INITRD_H_
+

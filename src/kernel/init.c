@@ -27,6 +27,7 @@
 #include <fs/initrd.h>
 #include <arch/stm/stm32l476xx.h>
 
+// Heap goes after the end of the BSS section
 extern uint8_t __bss_end__;
 
 extern void user_main(void);
@@ -34,15 +35,17 @@ void init_idle(void);
 
 int main(void)
 {
+    // Disable interrupts while we get ready
 	asm("cpsid i");
-	// disable cached writes for precise debug info
+
+	// Disabling cached writes can help give more precise debug info
 	//*((uint32_t *)0xE000E008) |= 2;
 
-	// prepare flash latency for 80MHz operation
+	// Prepare flash latency for 80MHz operation
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
 	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
 
-	// init core components
+	// Initialize core components
 	clock_init();
 	heap_init(&__bss_end__);
 	gpio_init();
@@ -51,17 +54,21 @@ int main(void)
 	vfs_init();
 	initrd_init();
 
-	// enable FPU
+	// Enable FPU (TODO why isn't it enabled?)
 	//SCB->CPACR |= (0xF << 20);
 
+    // Begin multi-tasking (enables interrupts)
 	task_init(init_idle, 512);
 	while (1);
 }
 
 void init_idle(void)
 {
+    // Start the main userspace task with a 4kB stack
 	task_start(user_main, 4096);
 
+    // Idle
 	while (1)
 		clock_delay(10);
 }
+

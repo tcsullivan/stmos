@@ -47,3 +47,4 @@ void clock_udelay(uint32_t count);
 uint32_t clock_millis(void);
 
 #endif // CLOCK_H_
+

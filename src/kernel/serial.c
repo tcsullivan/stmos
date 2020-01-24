@@ -28,9 +28,9 @@ void serial_init(uint32_t baud)
 	gpio_mode(GPIOA, 3, ALTERNATE);
 	GPIOA->AFR[0] &= ~(0x0000FF00);
 	GPIOA->AFR[0] |= 0x00007700;
-	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 
-	// start usart device
+	// Start usart device
+	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 	USART2->BRR = 80000000L / baud;
 	USART2->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 }
@@ -58,3 +58,4 @@ void serial_gets(char *buf, int max)
 	} while (buf[index] != '\r' && index++ < max);
 	buf[index] = '\0';
 }
+

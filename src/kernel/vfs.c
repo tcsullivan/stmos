@@ -61,13 +61,14 @@ void vfs_svc(uint32_t n, uint32_t *ret, uint32_t *args)
 
 void vfs_init(void)
 {
+    // Mark all volumes and files as empty
 	for (int i = 0; i < VFS_MAX_VOLS; i++)
 		vfs_volumes[i].flags = 0;
 	for (int i = 0; i < VFS_MAX_FILES; i++)
 		vfs_files[i].flags = 0;
 
 	vfs_mount(&stdio_funcs, 0);
-	// order is crucial
+    // Order of opening here may be important TODO confirm
 	vfs_open("   in", VFS_FILE_READ);
 	vfs_open("   out", VFS_FILE_WRITE);
 	vfs_open("   err", VFS_FILE_WRITE);
